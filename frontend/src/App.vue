@@ -2,18 +2,30 @@
   <div class="container">
     <h1>Sistema de Empréstimos</h1>
     <div class="tabs">
-      <button class="tab" :class="{ active: abaAtiva === 'listar' }" @click="abaAtiva = 'listar'">Clientes</button>
+      <button class="tab" :class="{ active: abaAtiva === 'clientes' }" @click="abaAtiva = 'clientes'">Clientes</button>
+      <button class="tab" :class="{ active: abaAtiva === 'emprestimos' }" @click="abaAtiva = 'emprestimos'">Empréstimos</button>
     </div>
 
     <!-- Listagem de Clientes -->
-    <ClientesList v-if="abaAtiva === 'listar'" @editar="editarCliente" @novo="novoCliente" />
+    <ClientesList v-if="abaAtiva === 'clientes'" @editar="editarCliente" @novo="novoCliente" />
 
     <!-- Formulário de Cliente -->
     <ClientesForm 
-      v-if="abaAtiva === 'form'" 
+      v-if="abaAtiva === 'form-cliente'" 
       :cliente="clienteSelecionado" 
-      @salvo="aoSalvar" 
-      @cancelar="abaAtiva = 'listar'" 
+      @salvo="aoSalvarCliente" 
+      @cancelar="abaAtiva = 'clientes'" 
+    />
+
+    <!-- Listagem de Empréstimos -->
+    <EmprestimosList v-if="abaAtiva === 'emprestimos'" @editar="editarEmprestimo" @novo="novoEmprestimo" />
+
+    <!-- Formulário de Empréstimo -->
+    <EmprestimosForm 
+      v-if="abaAtiva === 'form-emprestimo'" 
+      :emprestimo="emprestimoSelecionado" 
+      @salvo="aoSalvarEmprestimo" 
+      @cancelar="abaAtiva = 'emprestimos'" 
     />
   </div>
 </template>
@@ -21,28 +33,43 @@
 <script>
 import ClientesList from './components/ClientesList.vue'
 import ClientesForm from './components/ClientesForm.vue'
+import EmprestimosList from './components/EmprestimosList.vue'
+import EmprestimosForm from './components/EmprestimosForm.vue'
 
 export default {
   name: 'App',
-  components: { ClientesList, ClientesForm },
+  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm },
   data() {
     return {
-      abaAtiva: 'listar',
-      clienteSelecionado: null
+      abaAtiva: 'clientes',
+      clienteSelecionado: null,
+      emprestimoSelecionado: null
     }
   },
   methods: {
     novoCliente() {
       this.clienteSelecionado = null
-      this.abaAtiva = 'form'
+      this.abaAtiva = 'form-cliente'
     },
     editarCliente(cliente) {
       this.clienteSelecionado = cliente
-      this.abaAtiva = 'form'
+      this.abaAtiva = 'form-cliente'
     },
-    aoSalvar() {
+    aoSalvarCliente() {
       this.clienteSelecionado = null
-      this.abaAtiva = 'listar'
+      this.abaAtiva = 'clientes'
+    },
+    novoEmprestimo() {
+      this.emprestimoSelecionado = null
+      this.abaAtiva = 'form-emprestimo'
+    },
+    editarEmprestimo(emprestimo) {
+      this.emprestimoSelecionado = emprestimo
+      this.abaAtiva = 'form-emprestimo'
+    },
+    aoSalvarEmprestimo() {
+      this.emprestimoSelecionado = null
+      this.abaAtiva = 'emprestimos'
     }
   }
 }
