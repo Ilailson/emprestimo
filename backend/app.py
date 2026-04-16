@@ -16,7 +16,9 @@ def create_app():
 
     # Registrar blueprints (rotas)
     from routes.cliente_routes import cliente_bp
+    from routes.emprestimo_routes import emprestimo_bp
     app.register_blueprint(cliente_bp)
+    app.register_blueprint(emprestimo_bp)
 
     # Criar tabelas se não existirem
     with app.app_context():

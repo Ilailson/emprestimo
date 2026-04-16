@@ -25,6 +25,7 @@ class Emprestimo(db.Model):
             'data': self.data.isoformat() if self.data else None,
             'status': self.status,
             'cliente_id': self.cliente_id,
+            'cliente_nome': self.cliente.nome if self.cliente else None,
             'valor_total': self.calcular_total(),
             'valor_pago': self.calcular_pago(),
             'valor_devedor': self.calcular_devedor()
