@@ -1,3 +1,4 @@
+Faça a leitura de todo o projeto para como tá para prosseguir com o desenvolvimento
 Crie um sistema web completo para controle de empréstimos de dinheiro utilizando abordagem incremental (vibe coding), desenvolvendo uma funcionalidade por vez com backend e frontend integrados.
 
 📌 Tecnologias:
@@ -15,6 +16,10 @@ Crie um sistema web completo para controle de empréstimos de dinheiro utilizand
 - Mostrar estrutura de pastas
 - Preparar e implementar autenticação e autorização
 - Sempre aguardar confirmação do usuário antes de avançar para a próxima etapa
+- Garantir a ordem correta de criação das tabelas respeitando dependências:
+  - Primeiro tabelas sem dependência (Cliente)
+  - Depois tabelas dependentes (Emprestimo)
+  - Depois tabelas com múltiplas dependências (Pagamento)
 - Sempre dividir a resposta em:
   1. Explicação simples
   2. Código
@@ -88,7 +93,7 @@ Comece pela Etapa 1 (Clientes).
 - Popular automaticamente o banco de dados com dados fictícios para testes
 - Criar script separado chamado seed.py
 - Criar pelo menos:
-  - 10 clientes com nome, CPF e telefone válidos
+  - 10 clientes com nome e telefone válidos
   - 10 empréstimos vinculados a esses clientes
 
 - Os empréstimos devem conter:
