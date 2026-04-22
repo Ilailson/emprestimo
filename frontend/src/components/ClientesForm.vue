@@ -17,6 +17,7 @@
       <div class="actions">
         <button type="submit" class="btn btn-success">{{ editando ? 'Atualizar' : 'Cadastrar' }}</button>
         <button type="button" class="btn" @click="cancelar">Cancelar</button>
+        <button type="button" v-if="!editando" class="btn btn-primary" @click="salvarComEmprestimo">Cadastrar e criar Empréstimo</button>
       </div>
     </form>
   </div>
@@ -86,6 +87,15 @@ export default {
     },
     cancelar() {
       this.$emit('cancelar')
+    },
+    async salvarComEmprestimo() {
+      try {
+        const resp = await axios.post('/api/clientes', this.form)
+        this.$emit('criadoComEmprestimo', resp.data)
+        this.limpar()
+      } catch (err) {
+        alert(err.response?.data?.erro || 'Erro ao salvar')
+      }
     }
   }
 }
