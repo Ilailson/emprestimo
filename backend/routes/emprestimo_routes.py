@@ -33,16 +33,13 @@ def criar_emprestimo():
     """Cria um novo empréstimo"""
     data = request.json
 
-    # Validar campos obrigatórios
     if not data.get('valor') or not data.get('taxa_juros') or not data.get('cliente_id'):
         return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
 
-    # Verificar se cliente existe
     cliente = Cliente.query.get(data['cliente_id'])
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
 
-    # Converter data se informada
     data_emprestimo = None
     if data.get('data'):
         try:
@@ -50,13 +47,28 @@ def criar_emprestimo():
         except:
             data_emprestimo = datetime.utcnow()
 
-    # Criar empréstimo
+    data_vencimento = None
+    if data.get('data_vencimento'):
+        try:
+            data_vencimento_str = data['data_vencimento']
+            if data_vencimento_str:
+                data_vencimento = datetime.fromisoformat(data_vencimento_str)
+        except:
+            pass
+
+    valor_original = float(data['valor'])
+    taxa = float(data['taxa_juros'])
+
     emprestimo = Emprestimo(
-        valor=float(data['valor']),
-        taxa_juros=float(data['taxa_juros']),
+        valor_original=valor_original,
+        taxa_juros=taxa,
         cliente_id=data['cliente_id'],
         status=data.get('status', 'em_aberto'),
-        data=data_emprestimo
+        data=data_emprestimo,
+        data_vencimento=data_vencimento,
+        data_ultimo_calculo=datetime.utcnow(),
+        saldo_devedor=valor_original,
+        total_pago=0.0
     )
 
     db.session.add(emprestimo)
@@ -86,7 +98,9 @@ def atualizar_emprestimo(id):
     data = request.json
 
     if data.get('valor'):
-        emprestimo.valor = float(data['valor'])
+        emprestimo.valor_original = float(data['valor'])
+    if data.get('valor_original'):
+        emprestimo.valor_original = float(data['valor_original'])
     if data.get('taxa_juros'):
         emprestimo.taxa_juros = float(data['taxa_juros'])
     if data.get('status'):
@@ -94,6 +108,11 @@ def atualizar_emprestimo(id):
     if data.get('data'):
         try:
             emprestimo.data = datetime.fromisoformat(data['data'])
+        except:
+            pass
+    if data.get('data_vencimento'):
+        try:
+            emprestimo.data_vencimento = datetime.fromisoformat(data['data_vencimento'])
         except:
             pass
 
