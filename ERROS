@@ -1,0 +1,6 @@
+front:
+> emprestimo-frontend@1.0.0 dev
+> vite
+> Solução:
+        nvm install 20
+        nvm use 20

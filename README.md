@@ -1,4 +1,7 @@
-Faça a leitura de todo o projeto para como tá para prosseguir com o desenvolvimento
+<!-- Faça a leitura de todo o projeto para checar em que fase está para prosseguir com o desenvolvimento -->
+<!-- Fazer backup do backup e do projeto a cada funcionalidade implantada. -->
+<!-- Analise o meu projeto, aprenda todas as funcionalidades dele entenda como ele funciona e me explique se você entendeu pois, vou pedir modificações ou melhorias. -->
+
 Crie um sistema web completo para controle de empréstimos de dinheiro utilizando abordagem incremental (vibe coding), desenvolvendo uma funcionalidade por vez com backend e frontend integrados.
 
 📌 Tecnologias:
@@ -16,15 +19,22 @@ Crie um sistema web completo para controle de empréstimos de dinheiro utilizand
 - Mostrar estrutura de pastas
 - Preparar e implementar autenticação e autorização
 - Sempre aguardar confirmação do usuário antes de avançar para a próxima etapa
-- Garantir a ordem correta de criação das tabelas respeitando dependências:
-  - Primeiro tabelas sem dependência (Cliente)
-  - Depois tabelas dependentes (Emprestimo)
-  - Depois tabelas com múltiplas dependências (Pagamento)
+
 - Sempre dividir a resposta em:
   1. Explicação simples
   2. Código
   3. Como testar
+
 - Sempre comentar o código explicando o que cada parte faz
+
+- Garantir a ordem correta de criação das tabelas respeitando dependências:
+  - Primeiro tabelas sem dependência (Cliente)
+  - Depois tabelas dependentes (Emprestimo)
+  - Depois tabelas com múltiplas dependências (Pagamento)
+
+- Utilizar criação automática de tabelas com SQLAlchemy (db.create_all()) OU migrations (Flask-Migrate/Alembic)
+
+- Garantir que todas as tabelas estejam criadas antes de executar qualquer inserção de dados
 
 📌 Regras de negócio:
 - Um cliente pode ser também um usuário do sistema
@@ -32,6 +42,26 @@ Crie um sistema web completo para controle de empréstimos de dinheiro utilizand
   - ADMIN: acesso total ao sistema
   - USER: só pode visualizar seus próprios empréstimos e dívidas
 - O sistema deve controlar empréstimos, pagamentos e saldo devedor
+
+- O cálculo de juros deve ser feito sempre sobre o saldo devedor atual (não sobre o valor original)
+
+- Regra de cálculo:
+  saldo_devedor = valor_original - soma_pagamentos
+
+  juros = saldo_devedor * (taxa_juros / 100)
+
+  valor_total = saldo_devedor + juros
+
+- A cada pagamento:
+  - o valor pago deve ser abatido do saldo devedor
+  - o próximo cálculo de juros deve considerar o novo saldo atualizado
+
+- O sistema não deve recalcular juros sobre valores já pagos
+
+- Armazenar no banco:
+  - valor_original
+  - saldo_devedor atualizado
+  - total_pago
 
 📌 Funcionalidades:
 
@@ -41,8 +71,9 @@ Crie um sistema web completo para controle de empréstimos de dinheiro utilizand
 - Tela Vue para cadastro e listagem
 
 🧩 Etapa 2 - Empréstimos
-- Model Emprestimo (valor, taxa_juros, data, cliente_id, status)
-- Cálculo automático de juros
+- Model Emprestimo (valor_original, taxa_juros, data, cliente_id, status, saldo_devedor, total_pago)
+- Criar relacionamento correto com Cliente (foreign key)
+- Implementar cálculo de juros baseado no saldo devedor
 - Listagem com destaque:
   - Em aberto
   - Atrasado
@@ -50,7 +81,10 @@ Crie um sistema web completo para controle de empréstimos de dinheiro utilizand
 
 🧩 Etapa 3 - Pagamentos
 - Model Pagamento (valor, data, emprestimo_id)
-- Abater saldo automaticamente
+- Criar relacionamento correto com Emprestimo (foreign key)
+- Ao registrar pagamento:
+  - atualizar saldo_devedor
+  - atualizar total_pago
 - Tela de registro de pagamento
 
 🧩 Etapa 4 - Usuários e Permissões
@@ -105,6 +139,7 @@ Comece pela Etapa 1 (Clientes).
 - Garantir que os dados sejam realistas
 
 📌 Regras do Seed:
+- Executar o seed somente após todas as tabelas estarem criadas corretamente
 - Executar automaticamente ao iniciar o sistema
 - Evitar duplicação de dados ao reiniciar
 - Criar:

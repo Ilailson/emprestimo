@@ -1,0 +1,98 @@
+# Erros e Soluções - Fase Empréstimos
+
+## Erro 1: Vite não inicia (crypto.getRandomValues)
+
+### Problema
+```bash
+TypeError: crypto$2.getRandomValues is not a function
+    at resolveConfig (file:///home/.../vite/dist/node/chunks/dep-BK3b2jBa.js:66671:16)
+```
+
+### Causa
+Vite 5.x requer Node.js 18+, mas o ambiente usa Node 16.
+
+### Solução
+Downgrade para Vite 4.x no `package.json`:
+
+```json
+"devDependencies": {
+  "@vitejs/plugin-vue": "^4.0.0",
+  "vite": "^4.5.0"
+}
+```
+
+Reinstalar dependências:
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+## Erro 2: Campo Data não salvo
+
+### Problema
+O campo data não aparecia no formulário de empréstimo e não era persistido.
+
+### Causa
+Formulário não tinha campo data, e backend não processava o campo data na requisição.
+
+### Solução
+
+1. **Frontend** - Adicionar campo data no formulário (`EmprestimosForm.vue`):
+```html
+<div class="form-group">
+  <label>Data do Empréstimo</label>
+  <input v-model="form.data" type="date" required>
+</div>
+```
+
+2. **Backend** - Processar campo data nas routes (`emprestimo_routes.py`):
+```python
+from datetime import datetime
+
+# Na criação:
+if data.get('data'):
+    try:
+        data_emprestimo = datetime.fromisoformat(data['data'])
+    except:
+        data_emprestimo = datetime.utcnow()
+
+emprestimo = Emprestimo(
+    valor=float(data['valor']),
+    taxa_juros=float(data['taxa_juros']),
+    cliente_id=data['cliente_id'],
+    status=data.get('status', 'em_aberto'),
+    data=data_emprestimo  # Agora inclui data
+)
+```
+
+3. **Frontend** - Adicionar data no form reactive:
+```javascript
+form: {
+  cliente_id: '',
+  data: new Date().toISOString().split('T')[0],
+  valor: '',
+  taxa_juros: '',
+  status: 'em_aberto'
+}
+```
+
+---
+
+## Erro 3: Flask não conecta (Connection refused)
+
+### Problema
+O servidor Flask encerra ao fechar o terminal, causando "Connection refused".
+
+### Solução
+Iniciar servidor de forma persistente com nohup:
+```bash
+cd backend
+nohup bash -c "source venv/bin/activate && python app.py" > /tmp/flask.log 2>&1 &
+```
+
+Verificar se está rodando:
+```bash
+curl http://127.0.0.1:5000/api/clientes
+```
