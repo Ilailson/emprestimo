@@ -10,12 +10,14 @@
         <tr>
           <th>ID</th>
           <th>Cliente</th>
-          <th>Valor</th>
+          <th>Valor Original</th>
           <th>Taxa</th>
+          <th>Saldo Devedor</th>
+          <th>Total Pago</th>
+          <th>Juros</th>
           <th>Total</th>
-          <th>Pago</th>
-          <th>Devedor</th>
           <th>Data</th>
+          <th>Vencimento</th>
           <th>Status</th>
           <th>Ações</th>
         </tr>
@@ -24,12 +26,14 @@
         <tr v-for="emp in emprestimos" :key="emp.id" :class="getStatusClass(emp)">
           <td>{{ emp.id }}</td>
           <td>{{ emp.cliente_nome }}</td>
-          <td>{{ formatarDinheiro(emp.valor) }}</td>
+          <td>{{ formatarDinheiro(emp.valor_original) }}</td>
           <td>{{ emp.taxa_juros }}%</td>
+          <td>{{ formatarDinheiro(emp.saldo_devedor) }}</td>
+          <td>{{ formatarDinheiro(emp.total_pago) }}</td>
+          <td>{{ formatarDinheiro(emp.juros) }}</td>
           <td>{{ formatarDinheiro(emp.valor_total) }}</td>
-          <td>{{ formatarDinheiro(emp.valor_pago) }}</td>
-          <td>{{ formatarDinheiro(emp.valor_devedor) }}</td>
           <td>{{ formatarData(emp.data) }}</td>
+          <td>{{ formatarData(emp.data_vencimento) }}</td>
           <td>
             <span :class="'badge badge-' + getStatusBadge(emp)">
               {{ getStatusLabel(emp) }}
@@ -42,7 +46,7 @@
           </td>
         </tr>
         <tr v-if="emprestimos.length === 0">
-          <td colspan="10" style="text-align: center">Nenhum empréstimo cadastrado</td>
+          <td colspan="11" style="text-align: center">Nenhum empréstimo cadastrado</td>
         </tr>
       </tbody>
     </table>
@@ -85,35 +89,32 @@ export default {
       }
     },
     verDetalhes(emp) {
-      alert(`Cliente: ${emp.cliente_nome}\nValor: R$ ${emp.valor}\nTaxa: ${emp.taxa_juros}%\nTotal com Juros: R$ ${emp.valor_total}\nPago: R$ ${emp.valor_pago}\nDevedor: R$ ${emp.valor_devedor}`)
+      alert(`Cliente: ${emp.cliente_nome}\nValor Original: R$ ${emp.valor_original}\nTaxa: ${emp.taxa_juros}%\nSaldo Devedor: R$ ${emp.saldo_devedor}\nTotal Pago: R$ ${emp.total_pago}\nJuros: R$ ${emp.juros}\nTotal com Juros: R$ ${emp.valor_total}`)
     },
     getStatusClass(emp) {
       if (emp.status === 'pago') return 'row-pago'
-      const devedor = emp.valor_devedor || 0
-      if (devedor > 0) {
-        const dataEmprestimo = new Date(emp.data)
-        const meses = Math.floor((new Date() - dataEmprestimo) / (30 * 24 * 60 * 60 * 1000))
-        if (meses > 3) return 'row-atrasado'
+      const devedor = emp.saldo_devedor || 0
+      if (devedor > 0 && emp.data_vencimento) {
+        const dataVencto = new Date(emp.data_vencimento)
+        if (new Date() > dataVencto) return 'row-atrasado'
       }
       return ''
     },
     getStatusBadge(emp) {
       if (emp.status === 'pago') return 'success'
-      const devedor = emp.valor_devedor || 0
-      if (devedor > 0) {
-        const dataEmprestimo = new Date(emp.data)
-        const meses = Math.floor((new Date() - dataEmprestimo) / (30 * 24 * 60 * 60 * 1000))
-        if (meses > 3) return 'danger'
+      const devedor = emp.saldo_devedor || 0
+      if (devedor > 0 && emp.data_vencimento) {
+        const dataVencto = new Date(emp.data_vencimento)
+        if (new Date() > dataVencto) return 'danger'
       }
       return 'warning'
     },
     getStatusLabel(emp) {
       if (emp.status === 'pago') return 'Pago'
-      const devedor = emp.valor_devedor || 0
-      if (devedor > 0) {
-        const dataEmprestimo = new Date(emp.data)
-        const meses = Math.floor((new Date() - dataEmprestimo) / (30 * 24 * 60 * 60 * 1000))
-        if (meses > 3) return 'Atrasado'
+      const devedor = emp.saldo_devedor || 0
+      if (devedor > 0 && emp.data_vencimento) {
+        const dataVencto = new Date(emp.data_vencimento)
+        if (new Date() > dataVencto) return 'Atrasado'
       }
       return 'Em Aberto'
     },

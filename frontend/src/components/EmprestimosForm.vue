@@ -14,12 +14,16 @@
         <input v-model="form.data" type="date" required>
       </div>
       <div class="form-group">
-        <label>Valor do Empréstimo (R$)</label>
+        <label>Valor Original (R$)</label>
         <input v-model="form.valor" type="number" step="0.01" min="1" required placeholder="1000.00">
       </div>
       <div class="form-group">
         <label>Taxa de Juros (% ao mês)</label>
         <input v-model="form.taxa_juros" type="number" step="0.1" min="0" max="100" required placeholder="5">
+      </div>
+      <div class="form-group">
+        <label>Data de Vencimento</label>
+        <input v-model="form.data_vencimento" type="date">
       </div>
       <div class="form-group" v-if="editando">
         <label>Status</label>
@@ -46,7 +50,8 @@ import axios from 'axios'
 export default {
   name: 'EmprestimosForm',
   props: {
-    emprestimo: { type: Object, default: null }
+    emprestimo: { type: Object, default: null },
+    clienteParaEmprestimo: { type: Object, default: null }
   },
   emits: ['salvo', 'cancelar'],
   data() {
@@ -54,6 +59,7 @@ export default {
       form: {
         cliente_id: '',
         data: new Date().toISOString().split('T')[0],
+        data_vencimento: '',
         valor: '',
         taxa_juros: '',
         status: 'em_aberto'
@@ -67,9 +73,10 @@ export default {
     },
     previewTotal() {
       if (!this.form.valor || !this.form.taxa_juros) return null
-      const valor = parseFloat(this.form.valor)
+      const saldo = parseFloat(this.form.valor)
       const taxa = parseFloat(this.form.taxa_juros)
-      return valor * (1 + taxa / 100)
+      const juros = saldo * (taxa / 100)
+      return saldo + juros
     }
   },
   watch: {
@@ -80,7 +87,8 @@ export default {
           this.form = {
             cliente_id: novo.cliente_id,
             data: novo.data ? novo.data.split('T')[0] : new Date().toISOString().split('T')[0],
-            valor: novo.valor,
+            data_vencimento: novo.data_vencimento ? novo.data_vencimento.split('T')[0] : '',
+            valor: novo.valor_original || novo.valor,
             taxa_juros: novo.taxa_juros,
             status: novo.status || 'em_aberto'
           }
@@ -88,6 +96,7 @@ export default {
           this.form = {
             cliente_id: '',
             data: new Date().toISOString().split('T')[0],
+            data_vencimento: '',
             valor: '',
             taxa_juros: '',
             status: 'em_aberto'
@@ -104,20 +113,35 @@ export default {
       try {
         const resp = await axios.get('/api/clientes')
         this.clientes = resp.data
+        if (this.clienteParaEmprestimo) {
+          this.form.cliente_id = this.clienteParaEmprestimo.id
+        }
       } catch (err) {
         console.error('Erro ao carregar clientes', err)
       }
     },
-    async salvar() {
+async salvar() {
       try {
+        if (!this.form.cliente_id || !this.form.valor || !this.form.taxa_juros) {
+          alert('Preencha todos os campos obrigatórios')
+          return
+        }
+        const dataToSend = {
+          ...this.form,
+          cliente_id: parseInt(this.form.cliente_id),
+          valor: parseFloat(this.form.valor),
+          taxa_juros: parseFloat(this.form.taxa_juros)
+        }
+        console.log('Enviando:', dataToSend)
         if (this.editando) {
-          await axios.put(`/api/emprestimos/${this.emprestimo.id}`, this.form)
+          await axios.put(`/api/emprestimos/${this.emprestimo.id}`, dataToSend)
         } else {
-          await axios.post('/api/emprestimos', this.form)
+          await axios.post('/api/emprestimos', dataToSend)
         }
         this.$emit('salvo')
         this.limpar()
       } catch (err) {
+        console.error('Erro ao salvar:', err)
         alert(err.response?.data?.erro || 'Erro ao salvar')
       }
     },
@@ -125,6 +149,7 @@ export default {
       this.form = {
         cliente_id: '',
         data: new Date().toISOString().split('T')[0],
+        data_vencimento: '',
         valor: '',
         taxa_juros: '',
         status: 'em_aberto'

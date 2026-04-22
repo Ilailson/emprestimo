@@ -14,7 +14,8 @@
       v-if="abaAtiva === 'form-cliente'" 
       :cliente="clienteSelecionado" 
       @salvo="aoSalvarCliente" 
-      @cancelar="abaAtiva = 'clientes'" 
+      @cancelar="abaAtiva = 'clientes'"
+      @criadoComEmprestimo="aoCriarComEmprestimo"
     />
 
     <!-- Listagem de Empréstimos -->
@@ -24,6 +25,7 @@
     <EmprestimosForm 
       v-if="abaAtiva === 'form-emprestimo'" 
       :emprestimo="emprestimoSelecionado" 
+      :clienteParaEmprestimo="clienteParaEmprestimo"
       @salvo="aoSalvarEmprestimo" 
       @cancelar="abaAtiva = 'emprestimos'" 
     />
@@ -43,7 +45,8 @@ export default {
     return {
       abaAtiva: 'clientes',
       clienteSelecionado: null,
-      emprestimoSelecionado: null
+      emprestimoSelecionado: null,
+      clienteParaEmprestimo: null
     }
   },
   methods: {
@@ -59,6 +62,12 @@ export default {
       this.clienteSelecionado = null
       this.abaAtiva = 'clientes'
     },
+    aoCriarComEmprestimo(cliente) {
+      this.clienteSelecionado = null
+      this.abaAtiva = 'clientes'
+      this.clienteParaEmprestimo = cliente
+      this.abaAtiva = 'form-emprestimo'
+    },
     novoEmprestimo() {
       this.emprestimoSelecionado = null
       this.abaAtiva = 'form-emprestimo'
@@ -69,6 +78,7 @@ export default {
     },
     aoSalvarEmprestimo() {
       this.emprestimoSelecionado = null
+      this.clienteParaEmprestimo = null
       this.abaAtiva = 'emprestimos'
     }
   }
