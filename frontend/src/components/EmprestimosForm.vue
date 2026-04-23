@@ -51,6 +51,7 @@ export default {
   name: 'EmprestimosForm',
   props: {
     emprestimo: { type: Object, default: null },
+    clienteId: { type: Number, default: null },
     clienteParaEmprestimo: { type: Object, default: null }
   },
   emits: ['salvo', 'cancelar'],
@@ -115,6 +116,8 @@ export default {
         this.clientes = resp.data
         if (this.clienteParaEmprestimo) {
           this.form.cliente_id = this.clienteParaEmprestimo.id
+        } else if (this.clienteId) {
+          this.form.cliente_id = this.clienteId
         }
       } catch (err) {
         console.error('Erro ao carregar clientes', err)

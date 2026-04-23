@@ -2,7 +2,10 @@
   <div class="card">
     <div class="header-list">
       <h2>Lista de Empréstimos</h2>
-      <button class="btn btn-primary" @click="$emit('novo')">+ Novo Empréstimo</button>
+      <div>
+        <button v-if="clienteId" class="btn" @click="voltar">← Voltar para Clientes</button>
+        <button class="btn btn-primary" @click="novoEmprestimo">+ Novo Empréstimo</button>
+      </div>
     </div>
     <div v-if="mensagem" :class="mensagem_tipo">{{ mensagem }}</div>
     <table>
@@ -41,6 +44,7 @@
           </td>
           <td class="actions">
             <button class="btn btn-sm" @click="verDetalhes(emp)">Ver</button>
+            <button class="btn btn-success btn-sm" @click="$emit('fazerPagamento', emp)">Pagar</button>
             <button class="btn btn-warning btn-sm" @click="$emit('editar', emp)">Editar</button>
             <button class="btn btn-danger btn-sm" @click="excluir(emp.id)">Excluir</button>
           </td>
@@ -58,7 +62,10 @@ import axios from 'axios'
 
 export default {
   name: 'EmprestimosList',
-  emits: ['editar', 'novo'],
+  props: {
+    clienteId: { type: Number, default: null }
+  },
+  emits: ['editar', 'novo', 'voltar', 'fazerPagamento'],
   data() {
     return {
       emprestimos: [],
@@ -69,10 +76,19 @@ export default {
   mounted() {
     this.buscar()
   },
+  watch: {
+    clienteId() {
+      this.buscar()
+    }
+  },
   methods: {
     async buscar() {
       try {
-        const resp = await axios.get('/api/emprestimos')
+        let url = '/api/emprestimos'
+        if (this.clienteId) {
+          url = `/api/clientes/${this.clienteId}/emprestimos`
+        }
+        const resp = await axios.get(url)
         this.emprestimos = resp.data
       } catch (err) {
         this.exibirMensagem('Erro ao carregar empréstimos', 'error')
@@ -90,6 +106,9 @@ export default {
     },
     verDetalhes(emp) {
       alert(`Cliente: ${emp.cliente_nome}\nValor Original: R$ ${emp.valor_original}\nTaxa: ${emp.taxa_juros}%\nSaldo Devedor: R$ ${emp.saldo_devedor}\nTotal Pago: R$ ${emp.total_pago}\nJuros: R$ ${emp.juros}\nTotal com Juros: R$ ${emp.valor_total}`)
+    },
+    voltar() {
+      this.$emit('voltar')
     },
     getStatusClass(emp) {
       if (emp.status === 'pago') return 'row-pago'
@@ -130,6 +149,9 @@ export default {
     formatarData(data) {
       if (!data) return '-'
       return new Date(data).toLocaleDateString('pt-BR')
+    },
+    novoEmprestimo() {
+      this.$emit('novo', this.clienteId)
     }
   }
 }
