@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from extensions import db
 from models.pagamento import Pagamento
 from models.emprestimo import Emprestimo
+from models.cliente import Cliente
 
 pagamento_bp = Blueprint('pagamentos', __name__, url_prefix='/api')
 
@@ -10,6 +11,16 @@ pagamento_bp = Blueprint('pagamentos', __name__, url_prefix='/api')
 def listar_pagamentos():
     """Lista todos os pagamentos"""
     pagamentos = Pagamento.query.order_by(Pagamento.data.desc()).all()
+    return jsonify([p.to_dict() for p in pagamentos]), 200
+
+
+@pagamento_bp.route('/clientes/<int:cliente_id>/pagamentos', methods=['GET'])
+def listar_pagamentos_cliente(cliente_id):
+    """Lista pagamentos de um cliente específico"""
+    cliente = Cliente.query.get(cliente_id)
+    if not cliente:
+        return jsonify({'erro': 'Cliente não encontrado'}), 404
+    pagamentos = Pagamento.query.join(Emprestimo).filter(Emprestimo.cliente_id == cliente_id).order_by(Pagamento.data.desc()).all()
     return jsonify([p.to_dict() for p in pagamentos]), 200
 
 
