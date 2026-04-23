@@ -22,6 +22,8 @@
             <td>{{ formatarTelefone(cliente.telefone) }}</td>
             <td>{{ cliente.endereco || '-' }}</td>
             <td class="actions">
+              <button class="btn btn-primary" @click="$emit('verEmprestimos', cliente)">Empréstimos</button>
+              <button class="btn btn-info" @click="$emit('verPagamentos', cliente)">Pagamentos</button>
               <button class="btn btn-warning" @click="$emit('editar', cliente)">Editar</button>
               <button class="btn btn-danger" @click="excluir(cliente.id)">Excluir</button>
             </td>
@@ -39,7 +41,7 @@ import axios from 'axios'
 
 export default {
   name: 'ClientesList',
-  emits: ['editar', 'novo'],
+  emits: ['editar', 'novo', 'verEmprestimos', 'verPagamentos'],
   data() {
     return {
       clientes: [],
