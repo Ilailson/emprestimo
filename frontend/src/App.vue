@@ -8,7 +8,7 @@
     </div>
 
     <!-- Listagem de Clientes -->
-    <ClientesList v-if="abaAtiva === 'clientes'" @editar="editarCliente" @novo="novoCliente" />
+    <ClientesList v-if="abaAtiva === 'clientes'" @editar="editarCliente" @novo="novoCliente" @verEmprestimos="verEmprestimosCliente" @verPagamentos="verPagamentosCliente" />
 
     <!-- Formulário de Cliente -->
     <ClientesForm 
@@ -20,24 +20,27 @@
     />
 
     <!-- Listagem de Empréstimos -->
-    <EmprestimosList v-if="abaAtiva === 'emprestimos'" @editar="editarEmprestimo" @novo="novoEmprestimo" />
+    <EmprestimosList v-if="abaAtiva === 'emprestimos'" :cliente-id="filtroClienteId" @editar="editarEmprestimo" @novo="novoEmprestimo" @voltar="filtroClienteId = null; abaAtiva = 'clientes'" @fazerPagamento="fazerPagamentoEmprestimo" />
 
     <!-- Formulário de Empréstimo -->
     <EmprestimosForm 
       v-if="abaAtiva === 'form-emprestimo'" 
       :emprestimo="emprestimoSelecionado" 
+      :cliente-id="filtroClienteId"
       :clienteParaEmprestimo="clienteParaEmprestimo"
       @salvo="aoSalvarEmprestimo" 
       @cancelar="abaAtiva = 'emprestimos'" 
     />
 
     <!-- Listagem de Pagamentos -->
-    <PagamentosList v-if="abaAtiva === 'pagamentos'" @novo="novoPagamento" />
+    <PagamentosList v-if="abaAtiva === 'pagamentos'" :cliente-id="filtroClienteIdPagamentos" :emprestimo-id="filtroEmprestimoId" @novo="novoPagamento" @voltar="voltarPagamentos" />
 
     <!-- Formulário de Pagamento -->
     <PagamentosForm 
       v-if="abaAtiva === 'form-pagamento'" 
       :pagamento="pagamentoSelecionado"
+      :cliente-id="filtroClienteIdPagamentos"
+      :emprestimo-id="emprestimoIdParaPagamento"
       @salvo="aoSalvarPagamento" 
       @cancelar="abaAtiva = 'pagamentos'" 
     />
@@ -61,7 +64,11 @@ export default {
       clienteSelecionado: null,
       emprestimoSelecionado: null,
       clienteParaEmprestimo: null,
-      pagamentoSelecionado: null
+      pagamentoSelecionado: null,
+      filtroClienteId: null,
+      filtroClienteIdPagamentos: null,
+      filtroEmprestimoId: null,
+      emprestimoIdParaPagamento: null
     }
   },
   methods: {
@@ -83,13 +90,31 @@ export default {
       this.clienteParaEmprestimo = cliente
       this.abaAtiva = 'form-emprestimo'
     },
-    novoEmprestimo() {
+    novoEmprestimo(clienteId) {
       this.emprestimoSelecionado = null
+      this.clienteParaEmprestimo = null
+      if (clienteId) {
+        this.filtroClienteId = clienteId
+      }
       this.abaAtiva = 'form-emprestimo'
     },
     editarEmprestimo(emprestimo) {
       this.emprestimoSelecionado = emprestimo
       this.abaAtiva = 'form-emprestimo'
+    },
+    verEmprestimosCliente(cliente) {
+      this.filtroClienteId = cliente.id
+      this.abaAtiva = 'emprestimos'
+    },
+    fazerPagamentoEmprestimo(emprestimo) {
+      this.emprestimoIdParaPagamento = emprestimo.id
+      this.filtroEmprestimoId = emprestimo.id
+      this.pagamentoSelecionado = null
+      this.abaAtiva = 'pagamentos'
+    },
+    verPagamentosCliente(cliente) {
+      this.filtroClienteIdPagamentos = cliente.id
+      this.abaAtiva = 'pagamentos'
     },
     aoSalvarEmprestimo() {
       this.emprestimoSelecionado = null
@@ -98,7 +123,19 @@ export default {
     },
     novoPagamento() {
       this.pagamentoSelecionado = null
+      this.emprestimoIdParaPagamento = this.filtroEmprestimoId
       this.abaAtiva = 'form-pagamento'
+    },
+    voltarPagamentos() {
+      if (this.filtroEmprestimoId) {
+        this.filtroEmprestimoId = null
+        this.abaAtiva = 'emprestimos'
+      } else if (this.filtroClienteIdPagamentos) {
+        this.filtroClienteIdPagamentos = null
+        this.abaAtiva = 'clientes'
+      } else {
+        this.abaAtiva = 'clientes'
+      }
     },
     editarPagamento(pagamento) {
       this.pagamentoSelecionado = pagamento
@@ -106,8 +143,9 @@ export default {
     },
     aoSalvarPagamento() {
       this.pagamentoSelecionado = null
+      this.emprestimoIdParaPagamento = null
       this.abaAtiva = 'pagamentos'
-    }
+    },
   }
 }
 </script>

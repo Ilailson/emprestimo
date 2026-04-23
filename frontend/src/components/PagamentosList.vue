@@ -2,7 +2,11 @@
   <div class="card">
     <div class="header-list">
       <h2>Pagamentos</h2>
-      <button class="btn btn-primary" @click="$emit('novo')">+ Novo Pagamento</button>
+      <div>
+        <button v-if="emprestimoId" class="btn" @click="$emit('voltar')">← Voltar para Empréstimos</button>
+        <button v-else-if="clienteId" class="btn" @click="$emit('voltar')">← Voltar para Clientes</button>
+        <button class="btn btn-primary" @click="$emit('novo')">+ Novo Pagamento</button>
+      </div>
     </div>
 
     <div v-if="mensagem" :class="mensagem_tipo">{{ mensagem }}</div>
@@ -45,7 +49,11 @@ import axios from 'axios'
 
 export default {
   name: 'PagamentosList',
-  emits: ['novo'],
+  props: {
+    clienteId: { type: Number, default: null },
+    emprestimoId: { type: Number, default: null }
+  },
+  emits: ['novo', 'voltar'],
   data() {
     return {
       pagamentos: [],
@@ -56,10 +64,24 @@ export default {
   mounted() {
     this.buscar()
   },
+  watch: {
+    clienteId() {
+      this.buscar()
+    },
+    emprestimoId() {
+      this.buscar()
+    }
+  },
   methods: {
     async buscar() {
       try {
-        const resp = await axios.get('/api/pagamentos')
+        let url = '/api/pagamentos'
+        if (this.emprestimoId) {
+          url = `/api/emprestimos/${this.emprestimoId}/pagamentos`
+        } else if (this.clienteId) {
+          url = `/api/clientes/${this.clienteId}/pagamentos`
+        }
+        const resp = await axios.get(url)
         this.pagamentos = resp.data
       } catch (err) {
         this.exibirMensagem('Erro ao carregar pagamentos', 'error')

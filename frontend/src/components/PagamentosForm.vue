@@ -75,7 +75,9 @@ import axios from 'axios'
 export default {
   name: 'PagamentosForm',
   props: {
-    pagamento: { type: Object, default: null }
+    pagamento: { type: Object, default: null },
+    clienteId: { type: Number, default: null },
+    emprestimoId: { type: Number, default: null }
   },
   emits: ['salvo', 'cancelar'],
   data() {
@@ -132,9 +134,20 @@ export default {
   methods: {
     async buscarEmprestimos() {
       try {
-        const resp = await axios.get('/api/emprestimos')
+        let url = '/api/emprestimos'
+        if (this.clienteId) {
+          url = `/api/clientes/${this.clienteId}/emprestimos`
+        }
+        const resp = await axios.get(url)
         this.emprestimos = resp.data
-        if (this.form.emprestimo_id) {
+        
+        if (this.emprestimoId) {
+          this.form.emprestimo_id = this.emprestimoId
+          this.emprestimoSelecionado = this.emprestimos.find(e => e.id === this.emprestimoId)
+          if (this.emprestimoSelecionado && this.emprestimoSelecionado.juros) {
+            this.pagarJuros = true
+          }
+        } else if (this.form.emprestimo_id) {
           this.emprestimoSelecionado = this.emprestimos.find(e => e.id === parseInt(this.form.emprestimo_id))
         }
       } catch (err) {
