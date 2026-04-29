@@ -1,0 +1,12 @@
+# Build do Frontend
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# Output será salvo em /app/dist por causa do volumes no docker-compose

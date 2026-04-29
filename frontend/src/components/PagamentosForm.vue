@@ -1,71 +1,100 @@
 <template>
-  <div class="card">
-    <h2>{{ editando ? 'Editar Pagamento' : 'Registrar Pagamento' }}</h2>
-    <form @submit.prevent="salvar">
-      <div class="form-group">
-        <label>Empréstimo</label>
-        <select v-model="form.emprestimo_id" required :disabled="editando" @change="onEmprestimoChange">
-          <option value="" disabled>Selecione um empréstimo</option>
-          <option v-for="emp in emprestimos" :key="emp.id" :value="emp.id">
-            {{ emp.cliente_nome }} - R$ {{ formatarDinheiro(emp.saldo_devedor) }} (Devedor)
-          </option>
-        </select>
-      </div>
+  <div class="max-w-2xl mx-auto space-y-4">
+    <div class="flex items-center gap-3">
+      <button @click="$emit('cancelar')" class="p-2 -ml-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </button>
+      <h1 class="text-xl font-bold text-white">Registrar Pagamento</h1>
+    </div>
 
-      <div class="info-box" v-if="emprestimoSelecionado">
-        <p><strong>Cliente:</strong> {{ emprestimoSelecionado.cliente_nome }}</p>
-        <p><strong>Valor Original:</strong> {{ formatarDinheiro(emprestimoSelecionado.valor_original) }}</p>
-        <p><strong>Saldo Devedor:</strong> {{ formatarDinheiro(emprestimoSelecionado.saldo_devedor) }}</p>
-        <p><strong>Juros do Mês:</strong> {{ formatarDinheiro(emprestimoSelecionado.juros) }}</p>
-        <p><strong>Total com Juros:</strong> {{ formatarDinheiro(emprestimoSelecionado.valor_total) }}</p>
-        <p><strong>Total Pago:</strong> {{ formatarDinheiro(emprestimoSelecionado.total_pago) }}</p>
-      </div>
-
-      <div class="pagamento-opcoes" v-if="emprestimoSelecionado">
-        <h3>Escolha como pagar:</h3>
-
-        <div class="opcao-pagamento">
-          <label class="opcao-label">
-            <input type="checkbox" v-model="pagarJuros" @change="atualizarValorTotal">
-            Pagar Juros: R$ {{ formatarDinheiro(emprestimoSelecionado.juros) }}
-          </label>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6">
+      <form @submit.prevent="salvar" class="space-y-4">
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-300">Empréstimo</label>
+          <select v-model="form.emprestimo_id" required :disabled="editando || emprestimoId" @change="onEmprestimoChange" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[48px] disabled:opacity-50">
+            <option value="" disabled>Selecione um empréstimo</option>
+            <option v-for="emp in empFiltrados" :key="emp.id" :value="emp.id">
+              {{ emp.cliente_nome }} - R$ {{ formatarDinheiro(emp.saldo_devedor) }}
+            </option>
+          </select>
         </div>
 
-        <div class="opcao-pagamento">
-          <label class="opcao-label">
-            <input type="checkbox" v-model="pagarSaldo" @change="atualizarValorTotal">
-            Pagar Saldo Devedor
-          </label>
-          <div class="sub-opcao" v-if="pagarSaldo">
-            <label>
-              Valor a pagar no saldo:
-              <input v-model="form.valor_saldo" type="number" step="0.01" min="0"
-                     :max="emprestimoSelecionado.saldo_devedor"
-                     placeholder="0.00"
-                     @input="atualizarValorTotal">
-            </label>
-            <div class="valor-sugestoes">
-              <button type="button" class="btn btn-sm" @click="sugerirValor(50)">50%</button>
-              <button type="button" class="btn btn-sm" @click="sugerirValor(100)">100%</button>
+        <div v-if="emprestimoSelecionado" class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Informações do Empréstimo</h3>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <p class="text-slate-500 text-xs">Cliente</p>
+              <p class="text-white font-medium">{{ emprestimoSelecionado.cliente_nome }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500 text-xs">Saldo Devedor</p>
+              <p class="text-amber-400 font-semibold">{{ formatarDinheiro(emprestimoSelecionado.saldo_devedor) }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500 text-xs">Valor Original</p>
+              <p class="text-white">{{ formatarDinheiro(emprestimoSelecionado.valor_original) }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500 text-xs">Juros do Mês</p>
+              <p class="text-red-400 font-medium">{{ formatarDinheiro(emprestimoSelecionado.juros) }}</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="total-pagamento" v-if="emprestimoSelecionado">
-        <h3>Total a Pagar: R$ {{ formatarDinheiro(valorTotal) }}</h3>
-      </div>
+        <div v-if="emprestimoSelecionado" class="space-y-3">
+          <h3 class="text-sm font-semibold text-slate-300">Forma de Pagamento</h3>
+          
+          <label class="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg cursor-pointer" :class="pagarJuros ? 'border-amber-500 bg-amber-500/5' : ''">
+            <input type="checkbox" v-model="pagarJuros" class="w-5 h-5 mt-0.5 rounded border-slate-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900">
+            <div>
+              <p class="text-white font-medium">Pagar Juros</p>
+              <p class="text-slate-400 text-sm">Juros do mês: {{ formatarDinheiro(emprestimoSelecionado.juros) }}</p>
+            </div>
+          </label>
 
-      <div class="form-group">
-        <label>Data do Pagamento</label>
-        <input v-model="form.data" type="date" required>
-      </div>
+          <label class="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg cursor-pointer" :class="pagarSaldo ? 'border-amber-500 bg-amber-500/5' : ''">
+            <input type="checkbox" v-model="pagarSaldo" class="w-5 h-5 mt-0.5 rounded border-slate-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900">
+            <div>
+              <p class="text-white font-medium">Pagar Saldo Devedor</p>
+              <p class="text-slate-400 text-sm">Saldo: {{ formatarDinheiro(emprestimoSelecionado.saldo_devedor) }}</p>
+            </div>
+          </label>
 
-      <div class="actions">
-        <button type="submit" class="btn btn-success">{{ editando ? 'Atualizar' : 'Registrar Pagamento' }}</button>
-        <button type="button" class="btn" @click="$emit('cancelar')">Cancelar</button>
-      </div>
-    </form>
+          <div v-if="pagarSaldo" class="pl-8 space-y-2">
+            <label class="text-sm font-medium text-slate-300">Valor a pagar no saldo</label>
+            <input v-model="form.valor_saldo" type="number" step="0.01" min="0" :max="emprestimoSelecionado.saldo_devedor" placeholder="0.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[48px]">
+            <div class="flex gap-2">
+              <button type="button" @click="sugerirValor(50)" class="flex-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-all border border-slate-700">50%</button>
+              <button type="button" @click="sugerirValor(100)" class="flex-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-all border border-slate-700">100%</button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="emprestimoSelecionado && valorTotal > 0" class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg p-4 text-center">
+          <p class="text-amber-100 text-xs font-medium">Total a Pagar</p>
+          <p class="text-2xl font-bold text-white">{{ formatarDinheiro(valorTotal) }}</p>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-300">Data do Pagamento</label>
+          <input v-model="form.data" type="date" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[48px]">
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition-all font-medium shadow-lg shadow-amber-500/25 min-h-[48px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Confirmar Pagamento
+          </button>
+          <button type="button" @click="$emit('cancelar')" class="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all border border-slate-700 min-h-[48px]">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -106,6 +135,9 @@ export default {
         total += parseFloat(this.form.valor_saldo)
       }
       return total
+    },
+    empFiltrados() {
+      return this.emprestimos.filter(emp => emp.saldo_devedor && emp.saldo_devedor > 0)
     }
   },
   watch: {
@@ -163,8 +195,6 @@ export default {
         this.pagarJuros = true
       }
     },
-    atualizarValorTotal() {
-    },
     sugerirValor(porcentagem) {
       if (this.emprestimoSelecionado) {
         const valor = (porcentagem / 100) * this.emprestimoSelecionado.saldo_devedor
@@ -206,7 +236,6 @@ export default {
         this.$emit('salvo')
         this.limpar()
       } catch (err) {
-        console.error('Erro ao salvar:', err)
         alert(err.response?.data?.erro || 'Erro ao salvar pagamento')
       }
     },
@@ -221,69 +250,9 @@ export default {
       this.pagarSaldo = false
     },
     formatarDinheiro(valor) {
-      if (!valor) return '0,00'
-      return parseFloat(valor).toFixed(2).replace('.', ',')
+      if (!valor) return 'R$ 0,00'
+      return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',')
     }
   }
 }
 </script>
-
-<style scoped>
-.pagamento-opcoes {
-  margin: 15px 0;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 5px;
-}
-
-.pagamento-opcoes h3 {
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.opcao-pagamento {
-  margin: 10px 0;
-  padding: 10px;
-  background: white;
-  border-radius: 5px;
-}
-
-.opcao-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-}
-
-.opcao-label input[type="checkbox"] {
-  width: auto;
-}
-
-.sub-opcao {
-  margin-top: 10px;
-  margin-left: 25px;
-}
-
-.sub-opcao input {
-  margin-left: 10px;
-}
-
-.valor-sugestoes {
-  margin-top: 5px;
-  display: flex;
-  gap: 5px;
-}
-
-.total-pagamento {
-  text-align: center;
-  padding: 15px;
-  background: #4CAF50;
-  color: white;
-  border-radius: 5px;
-  margin: 15px 0;
-}
-
-.total-pagamento h3 {
-  margin: 0;
-}
-</style>

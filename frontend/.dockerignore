@@ -1,0 +1,17 @@
+# Node modules (instalado automaticamente no container)
+node_modules
+npm-debug.log
+*.log
+
+# Build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
