@@ -10,20 +10,70 @@ emprestimo_bp = Blueprint('emprestimos', __name__, url_prefix='/api')
 # LISTAR TODOS OS EMPRÉSTIMOS
 @emprestimo_bp.route('/emprestimos', methods=['GET'])
 def listar_emprestimos():
-    """Retorna lista de todos os empréstimos"""
-    emprestimos = Emprestimo.query.all()
+    """Retorna lista de todos os empréstimos com filtros opcionais"""
+    from sqlalchemy.orm import joinedload
+    
+    q = request.args.get('q', '')
+    status = request.args.get('status', '')
+    
+    # Usar eager loading para evitar N+1 queries
+    query = Emprestimo.query.options(joinedload(Emprestimo.cliente))
+    
+    # Filtro por nome do cliente (em SQL)
+    if q:
+        query = query.join(Cliente).filter(Cliente.nome.ilike(f'%{q}%'))
+    
+    # Filtro por status (em SQL)
+    if status:
+        agora = datetime.utcnow()
+        if status == 'atrasado':
+            query = query.filter(
+                Emprestimo.saldo_devedor > 0,
+                Emprestimo.data_vencimento != None,
+                Emprestimo.data_vencimento < agora
+            )
+        elif status == 'em_aberto':
+            query = query.filter(Emprestimo.status == 'em_aberto')
+        elif status == 'pago':
+            query = query.filter(Emprestimo.status == 'pago')
+    
+    # Usar distinct para evitar duplicatas quando há join
+    emprestimos = query.distinct().all()
+    
     return jsonify([e.to_dict() for e in emprestimos]), 200
 
 
 # LISTAR EMPRÉSTIMOS POR CLIENTE
 @emprestimo_bp.route('/clientes/<int:cliente_id>/emprestimos', methods=['GET'])
 def listar_emprestimos_cliente(cliente_id):
-    """Retorna empréstimos de um cliente específico"""
+    """Retorna empréstimos de um cliente específico com filtros opcionais"""
+    from sqlalchemy.orm import joinedload
+    
     cliente = Cliente.query.get(cliente_id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
 
-    emprestimos = Emprestimo.query.filter_by(cliente_id=cliente_id).all()
+    status = request.args.get('status', '')
+    
+    # Usar eager loading
+    query = Emprestimo.query.options(joinedload(Emprestimo.cliente)).filter_by(cliente_id=cliente_id)
+    
+    # Filtro por status (em SQL)
+    if status:
+        agora = datetime.utcnow()
+        if status == 'atrasado':
+            query = query.filter(
+                Emprestimo.saldo_devedor > 0,
+                Emprestimo.data_vencimento != None,
+                Emprestimo.data_vencimento < agora
+            )
+        elif status == 'em_aberto':
+            query = query.filter(Emprestimo.status == 'em_aberto')
+        elif status == 'pago':
+            query = query.filter(Emprestimo.status == 'pago')
+    
+    emprestimos = query.all()
+    
     return jsonify([e.to_dict() for e in emprestimos]), 200
 
 
@@ -101,6 +151,8 @@ def atualizar_emprestimo(id):
         emprestimo.valor_original = float(data['valor'])
     if data.get('valor_original'):
         emprestimo.valor_original = float(data['valor_original'])
+    if data.get('saldo_devedor'):
+        emprestimo.saldo_devedor = float(data['saldo_devedor'])
     if data.get('taxa_juros'):
         emprestimo.taxa_juros = float(data['taxa_juros'])
     if data.get('status'):

@@ -9,28 +9,56 @@ pagamento_bp = Blueprint('pagamentos', __name__, url_prefix='/api')
 
 @pagamento_bp.route('/pagamentos', methods=['GET'])
 def listar_pagamentos():
-    """Lista todos os pagamentos"""
-    pagamentos = Pagamento.query.order_by(Pagamento.data.desc()).all()
+    """Lista todos os pagamentos com filtro opcional por cliente"""
+    from sqlalchemy.orm import joinedload
+    
+    q = request.args.get('q', '')
+    
+    # Usar eager loading para evitar N+1 queries
+    query = Pagamento.query.options(
+        joinedload(Pagamento.emprestimo).joinedload(Emprestimo.cliente)
+    ).order_by(Pagamento.data.desc())
+    
+    # Filtro por nome do cliente (em SQL)
+    if q:
+        query = query.join(Emprestimo).join(Cliente).filter(Cliente.nome.ilike(f'%{q}%'))
+    
+    pagamentos = query.all()
+    
     return jsonify([p.to_dict() for p in pagamentos]), 200
 
 
 @pagamento_bp.route('/clientes/<int:cliente_id>/pagamentos', methods=['GET'])
 def listar_pagamentos_cliente(cliente_id):
     """Lista pagamentos de um cliente específico"""
+    from sqlalchemy.orm import joinedload
+    
     cliente = Cliente.query.get(cliente_id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
-    pagamentos = Pagamento.query.join(Emprestimo).filter(Emprestimo.cliente_id == cliente_id).order_by(Pagamento.data.desc()).all()
+    
+    # Usar eager loading
+    pagamentos = Pagamento.query.options(
+        joinedload(Pagamento.emprestimo).joinedload(Emprestimo.cliente)
+    ).join(Emprestimo).filter(Emprestimo.cliente_id == cliente_id).order_by(Pagamento.data.desc()).all()
+    
     return jsonify([p.to_dict() for p in pagamentos]), 200
 
 
 @pagamento_bp.route('/emprestimos/<int:emp_id>/pagamentos', methods=['GET'])
 def listar_pagamentos_emprestimo(emp_id):
     """Lista pagamentos de um empréstimo específico"""
+    from sqlalchemy.orm import joinedload
+    
     emprestimo = Emprestimo.query.get(emp_id)
     if not emprestimo:
         return jsonify({'erro': 'Empréstimo não encontrado'}), 404
-    pagamentos = Pagamento.query.filter_by(emprestimo_id=emp_id).order_by(Pagamento.data.desc()).all()
+    
+    # Usar eager loading
+    pagamentos = Pagamento.query.options(
+        joinedload(Pagamento.emprestimo).joinedload(Emprestimo.cliente)
+    ).filter_by(emprestimo_id=emp_id).order_by(Pagamento.data.desc()).all()
+    
     return jsonify([p.to_dict() for p in pagamentos]), 200
 
 

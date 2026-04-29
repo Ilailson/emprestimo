@@ -1,12 +1,32 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
 from models.cliente import Cliente
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
+
 cliente_bp = Blueprint('clientes', __name__, url_prefix='/api')
-# LISTAR TODOS OS CLIENTES
+
+# LISTAR TODOS OS CLIENTES (com busca opcional)
 @cliente_bp.route('/clientes', methods=['GET'])
 def listar_clientes():
-    """Retorna lista de todos os clientes"""
-    clientes = Cliente.query.all()
+    """Retorna lista de todos os clientes, com filtro opcional por nome ou telefone"""
+    termo = request.args.get('q', '')
+    
+    query = Cliente.query
+    if termo:
+        #ILIKE para PostgreSQL, LIKE para SQLite
+        termo_upper = termo.upper()
+        termo_lower = termo.lower()
+        query = query.filter(
+            or_(
+                Cliente.nome.ilike(f'%{termo}%'),
+                Cliente.nome.like(f'%{termo}%'),
+                Cliente.telefone.ilike(f'%{termo}%'),
+                Cliente.telefone.like(f'%{termo}%')
+            )
+        )
+    
+    clientes = query.all()
     return jsonify([c.to_dict() for c in clientes]), 200
 # CRIAR NOVO CLIENTE
 @cliente_bp.route('/clientes', methods=['POST'])

@@ -14,6 +14,7 @@ def create_app():
     from routes.cliente_routes import cliente_bp
     from routes.emprestimo_routes import emprestimo_bp
     from routes.pagamento_routes import pagamento_bp
+    
     app.register_blueprint(cliente_bp)
     app.register_blueprint(emprestimo_bp)
     app.register_blueprint(pagamento_bp)
@@ -24,8 +25,5 @@ def create_app():
     return app
 
 
-if __name__ == '__main__':
-    import os
-    debug = os.environ.get('FLASK_ENV') != 'production'
-    app = create_app()
-    app.run(debug=debug, host='0.0.0.0', port=5000)
+# Para Gunicorn
+app = create_app()
