@@ -22,9 +22,6 @@ COPY app.py wsgi.py config.py extensions.py ./
 COPY models models/
 COPY routes routes/
 
-# Criar diretório instance para SQLite (se usado em desenvolvimento)
-RUN mkdir -p /app/instance
-
 # Usuário não-root para segurança
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
