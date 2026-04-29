@@ -152,7 +152,12 @@ def atualizar_emprestimo(id):
     if data.get('valor_original'):
         emprestimo.valor_original = float(data['valor_original'])
     if data.get('saldo_devedor'):
-        emprestimo.saldo_devedor = float(data['saldo_devedor'])
+        saldo_novo = float(data['saldo_devedor'])
+        saldo_antigo = emprestimo.saldo_devedor or 0
+        diferenca = saldo_novo - saldo_antigo
+        if diferenca != 0:
+            emprestimo.valor_original = (emprestimo.valor_original or 0) + diferenca
+        emprestimo.saldo_devedor = saldo_novo
     if data.get('taxa_juros'):
         emprestimo.taxa_juros = float(data['taxa_juros'])
     if data.get('status'):
