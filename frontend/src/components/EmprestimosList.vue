@@ -10,8 +10,8 @@
           </svg>
           <span class="hidden sm:inline">Voltar</span>
         </button>
-        <!-- Botão só aparece a partir de md (tablet/desktop) -->
-        <button v-if="!clienteId" @click="$emit('novo', clienteId)" class="hidden md:inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all font-medium min-h-[44px]">
+        <!-- Botão desktop -->
+        <button @click="$emit('novo', clienteId)" class="hidden md:inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all font-medium min-h-[44px]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
           </svg>
@@ -20,8 +20,8 @@
       </div>
     </div>
 
-    <!-- Botão flutuante mobile - só mostra no mobile -->
-    <button v-if="!clienteId" @click="$emit('novo', clienteId)" class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/50 flex items-center justify-center z-40">
+    <!-- Botão flutuante mobile -->
+    <button @click="$emit('novo', clienteId)" class="md:hidden fixed bottom-20 right-6 w-14 h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/50 flex items-center justify-center z-40">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
       </svg>
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Botão Novo (mobile) -->
-    <button v-if="!clienteId" @click="$emit('novo', clienteId)" class="w-full sm:hidden inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all font-medium shadow-lg shadow-emerald-500/25 min-h-[44px]">
+    <button @click="$emit('novo', clienteId)" class="w-full sm:hidden inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all font-medium shadow-lg shadow-emerald-500/25 min-h-[44px]">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
       </svg>
