@@ -1,0 +1,55 @@
+# Dependências
+node_modules/
+backend/venv/
+frontend/venv/
+
+# Builds
+dist/
+frontend/dist/
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+*.env
+
+# Docker
+*.tar
+*.tar.gz
+
+# Banco de dados
+backend/instance/
+*.db
+
+# Logs
+*.log
+backend/*.log
+
+# Cache Python
+__pycache__/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+
+# Sistema
+.DS_Store
+Thumbs.db
+*Zone.Identifier
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Arquivos temporários
+teste
+DLL
+ERROS
+ERROS_EMPRESTIMO
+CORRECOESCLIENTES
+*.png
+
+# Documentação
+informacao/

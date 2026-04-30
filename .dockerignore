@@ -1,0 +1,34 @@
+# Node modules (instalado automaticamente no container)
+node_modules
+npm-debug.log
+
+# Python cache e ambiente virtual
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE e sistema
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Banco de dados (criado no container)
+*.db
+*.sqlite
+instance/
+
+# Cache do Vite
+.cache/
