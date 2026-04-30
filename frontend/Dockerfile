@@ -1,23 +1,32 @@
-# Usar Node.js 20 Alpine
-FROM node:20-alpine
+# Multi-stage build para frontend Vue.js
+# Etapa 1: Build da aplicação
+FROM node:20-alpine AS builder
 
-# Definir diretório de trabalho
 WORKDIR /app
 
-# Expor porta do Vite (dev)
-EXPOSE 3000
-
-# Variáveis de ambiente
-ENV NODE_ENV=development
-
-# Copiar package.json e package-lock.json primeiro (para cache)
+# Copiar arquivos de dependências
 COPY package*.json ./
 
 # Instalar dependências
 RUN npm ci
 
-# Copiar código da aplicação
+# Copiar código fonte
 COPY . .
 
-# Comando para iniciar em modo desenvolvimento com hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Gerar build de produção
+RUN npm run build
+
+# Etapa 2: Servir com Nginx
+FROM nginx:alpine
+
+# Copiar arquivo de configuração do Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiar arquivos buildados para o diretório padrão do Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expor porta 80
+EXPOSE 80
+
+# Iniciar Nginx em foreground
+CMD ["nginx", "-g", "daemon off;"]
