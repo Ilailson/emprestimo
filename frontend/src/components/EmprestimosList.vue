@@ -361,7 +361,7 @@ export default {
         this.exibirMensagem('Empréstimo excluído com sucesso', 'success')
         this.buscar()
       } catch (err) {
-        this.exibirMensagem(err.response?.data?.erro || 'Erro ao excluir. Entre em contato com o suporte.', 'error')
+        this.exibirMensagem(err.response?.data?.erro || 'Cliente tem empréstimos ativos', 'error')
       } finally {
         this.fecharModalExcluir()
       }

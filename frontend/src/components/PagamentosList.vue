@@ -29,11 +29,11 @@
     <!-- Busca -->
     <div class="relative">
       <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-      <input 
-        v-model="busca" 
+      <input
+        v-model="busca"
         @input="onInputBusca"
-        type="text" 
-        placeholder="Buscar cliente..." 
+        type="text"
+        placeholder="Buscar cliente..."
         class="w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[44px]"
       />
       <button v-if="busca" @click="limparBusca" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1">
@@ -120,7 +120,7 @@
           </div>
           <span class="text-emerald-400 font-semibold text-lg">{{ formatarDinheiro(pag.valor) }}</span>
         </div>
-        
+
         <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
           <p class="text-slate-400 text-sm">{{ formatarData(pag.data) }}</p>
           <button @click="abrirModalExcluir(pag.id)" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg transition-all text-sm font-medium border border-red-500/30 min-h-[44px]">
@@ -247,7 +247,7 @@ export default {
         this.exibirMensagem('Pagamento excluído com sucesso', 'success')
         this.buscar()
       } catch (err) {
-        this.exibirMensagem(err.response?.data?.erro || 'Erro ao excluir. Entre em contato com o suporte.', 'error')
+        this.exibirMensagem(err.response?.data?.erro || 'Cliente tem empréstimos ativos', 'error')
       } finally {
         this.fecharModalExcluir()
       }
