@@ -289,7 +289,7 @@ export default {
     return {
       emprestimos: [],
       busca: '',
-      statusFilter: '',
+      statusFilter: 'em_aberto',
       debounceTimeout: null,
       mensagem: '',
       mensagem_tipo: '',
