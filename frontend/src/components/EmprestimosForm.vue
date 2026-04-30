@@ -33,7 +33,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div v-if="editando" class="space-y-2">
             <label class="text-sm font-medium text-slate-300">Saldo Devedor (R$)</label>
-            <input v-model="form.saldo_devedor" type="number" step="0.01" min="0" required placeholder="1000.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
+            <input :value="saldoDevedorAtualizado" type="number" step="0.01" min="0" required placeholder="1000.00" readonly class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px] cursor-not-allowed opacity-75">
           </div>
           <div v-else class="space-y-2">
             <label class="text-sm font-medium text-slate-300">Valor (R$)</label>
@@ -43,6 +43,11 @@
             <label class="text-sm font-medium text-slate-300">Taxa (% ao mês)</label>
             <input v-model="form.taxa_juros" type="number" step="0.1" min="0" max="100" required placeholder="5" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
           </div>
+        </div>
+
+        <div v-if="editando" class="space-y-2">
+          <label class="text-sm font-medium text-slate-300">Adicionar Valor (R$)</label>
+          <input v-model="valorAdicionar" type="number" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
         </div>
 
         <div v-if="!editando" class="space-y-2">
@@ -102,6 +107,8 @@ export default {
         taxa_juros: '30',
         status: 'em_aberto'
       },
+      saldoDevedorOriginal: 0,
+      valorAdicionar: '',
       clientes: []
     }
   },
@@ -109,12 +116,17 @@ export default {
     editando() {
       return this.emprestimo !== null
     },
+    saldoDevedorAtualizado() {
+      const saldo = parseFloat(this.saldoDevedorOriginal) || 0
+      const adicional = parseFloat(this.valorAdicionar) || 0
+      return (saldo + adicional).toFixed(2)
+    },
     valorBase() {
-      return this.editando ? this.form.saldo_devedor : this.form.valor
+      return this.editando ? this.saldoDevedorAtualizado : this.form.valor
     },
     previewTotal() {
       if (!this.form.taxa_juros) return null
-      const valorBase = this.editando ? this.form.saldo_devedor : this.form.valor
+      const valorBase = this.editando ? this.saldoDevedorAtualizado : this.form.valor
       if (!valorBase) return null
       const saldo = parseFloat(valorBase)
       const taxa = parseFloat(this.form.taxa_juros)
@@ -127,6 +139,8 @@ export default {
       immediate: true,
       handler(novo) {
         if (novo) {
+          this.saldoDevedorOriginal = parseFloat(novo.saldo_devedor) || 0
+          this.valorAdicionar = ''
           this.form = {
             cliente_id: novo.cliente_id,
             data: novo.data ? novo.data.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -182,6 +196,8 @@ export default {
     resetarForm() {
       const dataHoje = new Date().toISOString().split('T')[0]
       const dataVencimento = this.calcularDataVencimento(dataHoje)
+      this.saldoDevedorOriginal = 0
+      this.valorAdicionar = ''
       this.form = {
         cliente_id: '',
         data: dataHoje,
@@ -198,7 +214,7 @@ export default {
           alert('Preencha todos os campos obrigatórios')
           return
         }
-        const valorCampo = this.editando ? this.form.saldo_devedor : this.form.valor
+        const valorCampo = this.editando ? this.saldoDevedorAtualizado : this.form.valor
         if (!valorCampo) {
           alert('Preencha o valor')
           return
@@ -207,7 +223,7 @@ export default {
           ...this.form,
           cliente_id: parseInt(this.form.cliente_id),
           valor: this.editando ? undefined : parseFloat(this.form.valor),
-          saldo_devedor: this.editando ? parseFloat(this.form.saldo_devedor) : undefined,
+          saldo_devedor: this.editando ? parseFloat(this.saldoDevedorAtualizado) : undefined,
           taxa_juros: parseFloat(this.form.taxa_juros)
         }
         if (this.editando) {
