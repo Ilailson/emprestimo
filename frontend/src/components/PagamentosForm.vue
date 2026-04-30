@@ -37,20 +37,20 @@
               <p class="text-white">{{ formatarDinheiro(emprestimoSelecionado.valor_original) }}</p>
             </div>
             <div>
-              <p class="text-slate-500 text-xs">Juros do Mês</p>
-              <p class="text-red-400 font-medium">{{ formatarDinheiro(emprestimoSelecionado.juros) }}</p>
+              <p class="text-slate-500 text-xs">Juros Acumulados ({{ emprestimoSelecionado.meses_atraso || 0 }} meses)</p>
+              <p class="text-red-400 font-medium">{{ formatarDinheiro(getJurosAcumulados()) }}</p>
             </div>
           </div>
         </div>
 
         <div v-if="emprestimoSelecionado" class="space-y-3">
           <h3 class="text-sm font-semibold text-slate-300">Forma de Pagamento</h3>
-          
+           
           <label class="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg cursor-pointer" :class="pagarJuros ? 'border-amber-500 bg-amber-500/5' : ''">
             <input type="checkbox" v-model="pagarJuros" class="w-5 h-5 mt-0.5 rounded border-slate-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900">
             <div>
               <p class="text-white font-medium">Pagar Juros</p>
-              <p class="text-slate-400 text-sm">Juros do mês: {{ formatarDinheiro(emprestimoSelecionado.juros) }}</p>
+              <p class="text-slate-400 text-sm">Juros acumulados ({{ emprestimoSelecionado.meses_atraso || 0 }} meses): {{ formatarDinheiro(emprestimoSelecionado.juros_acumulados || 0) }}</p>
             </div>
           </label>
 
@@ -129,7 +129,7 @@ export default {
     valorTotal() {
       let total = 0
       if (this.pagarJuros && this.emprestimoSelecionado) {
-        total += this.emprestimoSelecionado.juros
+        total += this.emprestimoSelecionado.juros_acumulados || 0
       }
       if (this.pagarSaldo && this.form.valor_saldo) {
         total += parseFloat(this.form.valor_saldo)
@@ -164,6 +164,14 @@ export default {
     this.buscarEmprestimos()
   },
   methods: {
+    getJurosAcumulados() {
+      if (!this.emprestimoSelecionado) return 0
+      // Prioriza juros_acumulados, senão usa juros normal
+      const juros = this.emprestimoSelecionado.juros_acumulados
+      if (typeof juros === 'number' && juros > 0) return juros
+      // Fallback para juros normal (1 mês)
+      return this.emprestimoSelecionado.juros || 0
+    },
     async buscarEmprestimos() {
       try {
         let url = '/api/emprestimos'
@@ -176,7 +184,7 @@ export default {
         if (this.emprestimoId) {
           this.form.emprestimo_id = this.emprestimoId
           this.emprestimoSelecionado = this.emprestimos.find(e => e.id === this.emprestimoId)
-          if (this.emprestimoSelecionado && this.emprestimoSelecionado.juros) {
+          if (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0) {
             this.pagarJuros = true
           }
         } else if (this.form.emprestimo_id) {
@@ -191,7 +199,7 @@ export default {
       this.pagarJuros = false
       this.pagarSaldo = false
       this.form.valor_saldo = ''
-      if (this.emprestimoSelecionado && this.emprestimoSelecionado.juros) {
+      if (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0) {
         this.pagarJuros = true
       }
     },
@@ -210,7 +218,7 @@ export default {
 
         let valorFinal = 0
         if (this.pagarJuros && this.emprestimoSelecionado) {
-          valorFinal += this.emprestimoSelecionado.juros
+          valorFinal += this.emprestimoSelecionado.juros_acumulados || 0
         }
         if (this.pagarSaldo && this.form.valor_saldo) {
           valorFinal += parseFloat(this.form.valor_saldo)

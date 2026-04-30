@@ -103,7 +103,10 @@
                 </span>
               </td>
               <td class="px-3 py-3">
-                <span class="text-amber-400 font-semibold text-sm">{{ formatarDinheiro(emp.juros) }}</span>
+                <span class="text-amber-400 font-semibold text-sm">
+                  {{ formatarDinheiro(emp.juros_acumulados || emp.juros) }}
+                  <span v-if="emp.meses_atraso > 0" class="text-xs text-slate-400">({{ emp.meses_atraso }}m)</span>
+                </span>
               </td>
               <td class="px-3 py-3 text-slate-300 text-sm">{{ formatarData(emp.data_vencimento) }}</td>
               <td class="px-3 py-3">
@@ -175,10 +178,13 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-800">
-          <div>
-            <p class="text-slate-500 text-xs">Valor</p>
-            <p class="text-white font-semibold">{{ formatarDinheiro(emp.valor_original) }}</p>
-          </div>
+           <div>
+             <p class="text-slate-500 text-xs">Juros</p>
+             <p class="text-amber-400 font-semibold">
+               {{ formatarDinheiro(emp.juros_acumulados || emp.juros) }}
+               <span v-if="emp.meses_atraso > 0" class="text-xs text-slate-400">({{ emp.meses_atraso }}m)</span>
+             </p>
+           </div>
           <div>
             <p class="text-slate-500 text-xs">Taxa</p>
             <p class="text-amber-400 font-semibold">{{ emp.taxa_juros }}%</p>
@@ -362,11 +368,7 @@ export default {
     },
     getStatusClass(emp) {
       if (emp.status === 'pago') return 'bg-emerald-500/5 border-emerald-500/30'
-      const devedor = emp.saldo_devedor || 0
-      if (devedor > 0 && emp.data_vencimento) {
-        const dataVencto = new Date(emp.data_vencimento)
-        if (new Date() > dataVencto) return 'bg-red-500/10 border-red-500/30'
-      }
+      if (emp.status === 'atrasado') return 'bg-red-500/10 border-red-500/30'
       return 'bg-slate-900 border-slate-800'
     },
     isPago(emp) {
@@ -374,20 +376,12 @@ export default {
     },
     getStatusBadge(emp) {
       if (emp.status === 'pago') return 'bg-emerald-500/20 text-emerald-400'
-      const devedor = emp.saldo_devedor || 0
-      if (devedor > 0 && emp.data_vencimento) {
-        const dataVencto = new Date(emp.data_vencimento)
-        if (new Date() > dataVencto) return 'bg-red-500/20 text-red-400'
-      }
+      if (emp.status === 'atrasado') return 'bg-red-500/20 text-red-400'
       return 'bg-amber-500/20 text-amber-400'
     },
     getStatusLabel(emp) {
       if (emp.status === 'pago') return 'Pago'
-      const devedor = emp.saldo_devedor || 0
-      if (devedor > 0 && emp.data_vencimento) {
-        const dataVencto = new Date(emp.data_vencimento)
-        if (new Date() > dataVencto) return 'Atrasado'
-      }
+      if (emp.status === 'atrasado') return 'Atrasado'
       return 'Em Aberto'
     },
     exibirMensagem(texto, tipo) {

@@ -85,7 +85,8 @@ def criar_pagamento():
     valor_principal = 0
 
     if pagar_juros:
-        valor_juros = emprestimo.calcular_juros()
+        # Usar juros acumulados dinâmico baseado no atraso
+        valor_juros = emprestimo.calcular_juros_acumulados()
 
     if pagar_saldo > 0:
         if emprestimo.saldo_devedor and pagar_saldo > emprestimo.saldo_devedor:
