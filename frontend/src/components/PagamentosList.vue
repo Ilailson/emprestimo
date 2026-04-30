@@ -259,7 +259,10 @@ export default {
     },
     formatarDinheiro(valor) {
       if (!valor) return 'R$ 0,00'
-      return 'R$ ' + parseFloat(valor).toFixed(2).replace('.', ',')
+      const numero = parseFloat(valor).toFixed(2)
+      const partes = numero.split('.')
+      partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+      return 'R$ ' + partes.join(',')
     },
     formatarData(data) {
       if (!data) return '-'
