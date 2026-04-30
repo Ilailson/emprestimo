@@ -79,6 +79,30 @@
         </div>
       </div>
 
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 group cursor-pointer" @click="$emit('navigate', 'pagamentos')">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-slate-400 text-sm font-medium mb-2">Total Juros Recebidos</p>
+            <p class="text-3xl font-bold text-white group-hover:text-orange-400 transition-colors">{{ formatarDinheiro(metricas.totalJuros) }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/30 transition-colors">
+            <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 text-sm">
+          <span class="text-orange-400 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Soma dos juros
+          </span>
+          <span class="text-slate-500">|</span>
+          <span class="text-slate-400">Ver detalhes →</span>
+        </div>
+      </div>
+
       <div class="bg-gradient-to-br from-blue-600 to-blue-700 border border-blue-500/50 rounded-xl p-5 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 group cursor-pointer">
         <div class="flex items-start justify-between">
           <div>
@@ -177,7 +201,8 @@ export default {
         totalRecebido: 0,
         totalPagamentos: 0,
         valorTotal: 0,
-        saldoDevedor: 0
+        saldoDevedor: 0,
+        totalJuros: 0
       },
       recentEmprestimos: [],
       recentPagamentos: []
@@ -201,13 +226,14 @@ export default {
         ])
 
         this.metricas.clientes = clientes.data.length
-
+ 
         const ativos = emprestimos.data.filter(e => e.status !== 'pago')
         this.metricas.emprestimos = ativos.length
         this.metricas.valorTotal = emprestimos.data.reduce((acc, e) => acc + (e.valor_original || 0), 0)
         this.metricas.saldoDevedor = emprestimos.data.reduce((acc, e) => acc + (e.saldo_devedor || 0), 0)
         this.metricas.totalPagamentos = pagamentos.data.length
         this.metricas.totalRecebido = pagamentos.data.reduce((acc, p) => acc + (p.valor || 0), 0)
+        this.metricas.totalJuros = pagamentos.data.reduce((acc, p) => acc + parseFloat(p.valor_juros || 0), 0)
 
         this.recentEmprestimos = emprestimos.data.slice(0, 5)
         this.recentPagamentos = pagamentos.data.slice(0, 5)
