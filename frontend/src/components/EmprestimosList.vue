@@ -31,19 +31,19 @@
     <div class="flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-        <input 
-          v-model="busca" 
+        <input
+          v-model="busca"
           @input="onInputBusca"
-          type="text" 
-          placeholder="Buscar cliente..." 
+          type="text"
+          placeholder="Buscar cliente..."
           class="w-full pl-10 pr-10 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[44px]"
         />
         <button v-if="busca" @click="limparBusca" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1">
           <X class="w-5 h-5" />
         </button>
       </div>
-      <select 
-        v-model="statusFilter" 
+      <select
+        v-model="statusFilter"
         @change="onStatusChange"
         class="px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[44px]"
       >
@@ -72,9 +72,9 @@
           <thead>
             <tr class="border-b border-slate-800 bg-slate-800/50">
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Empréstimo</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Taxa</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Saldo</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Devendo</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Juros</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Venc.</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
@@ -113,11 +113,11 @@
               </td>
               <td class="px-3 py-3">
                 <div class="flex items-center gap-1">
-                  <button 
-                    @click="$emit('fazerPagamento', emp)" 
+                  <button
+                    @click="$emit('fazerPagamento', emp)"
                     :disabled="isPago(emp)"
-                    :class="isPago(emp) 
-                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50' 
+                    :class="isPago(emp)
+                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50'
                       : 'p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-all'"
                     title="Pagar"
                   >
@@ -125,11 +125,11 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                   </button>
-                  <button 
-                    @click="$emit('editar', emp)" 
+                  <button
+                    @click="$emit('editar', emp)"
                     :disabled="isPago(emp)"
-                    :class="isPago(emp) 
-                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50' 
+                    :class="isPago(emp)
+                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50'
                       : 'p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all'"
                     title="Editar"
                   >
@@ -137,11 +137,11 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                     </svg>
                   </button>
-                  <button 
-                    @click="abrirModalExcluir(emp.id)" 
+                  <button
+                    @click="abrirModalExcluir(emp.id)"
                     :disabled="isPago(emp)"
-                    :class="isPago(emp) 
-                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50' 
+                    :class="isPago(emp)
+                      ? 'p-1.5 text-slate-600 bg-slate-800/30 rounded cursor-not-allowed opacity-50'
                       : 'p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all'"
                     title="Excluir"
                   >
@@ -173,7 +173,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-800">
           <div>
             <p class="text-slate-500 text-xs">Valor</p>
@@ -196,20 +196,20 @@
         </div>
 
         <div class="flex gap-2 mt-4 pt-3 border-t border-slate-800">
-          <button 
-            @click="$emit('fazerPagamento', emp)" 
+          <button
+            @click="$emit('fazerPagamento', emp)"
             :disabled="isPago(emp)"
-            :class="isPago(emp) 
-              ? 'flex-1 py-2.5 bg-slate-800/50 text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed opacity-50' 
+            :class="isPago(emp)
+              ? 'flex-1 py-2.5 bg-slate-800/50 text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed opacity-50'
               : 'flex-1 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium border border-emerald-500/30'"
           >
             Pagar
           </button>
-          <button 
-            @click="$emit('editar', emp)" 
+          <button
+            @click="$emit('editar', emp)"
             :disabled="isPago(emp)"
-            :class="isPago(emp) 
-              ? 'p-2.5 text-slate-600 bg-slate-800/30 rounded-lg cursor-not-allowed opacity-50' 
+            :class="isPago(emp)
+              ? 'p-2.5 text-slate-600 bg-slate-800/30 rounded-lg cursor-not-allowed opacity-50'
               : 'p-2.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all'"
             title="Editar"
           >
@@ -217,11 +217,11 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
             </svg>
           </button>
-          <button 
-            @click="abrirModalExcluir(emp.id)" 
+          <button
+            @click="abrirModalExcluir(emp.id)"
             :disabled="isPago(emp)"
-            :class="isPago(emp) 
-              ? 'p-2.5 text-slate-600 bg-slate-800/30 rounded-lg cursor-not-allowed opacity-50' 
+            :class="isPago(emp)
+              ? 'p-2.5 text-slate-600 bg-slate-800/30 rounded-lg cursor-not-allowed opacity-50'
               : 'p-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all'"
             title="Excluir"
           >
@@ -313,7 +313,7 @@ export default {
         if (this.statusFilter && this.statusFilter.trim()) {
           params.status = this.statusFilter.trim()
         }
-        
+
         const resp = await axios.get(url, { params })
         this.emprestimos = resp.data
       } catch (err) {
