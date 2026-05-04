@@ -69,18 +69,13 @@
                 <td class="px-3 py-3 text-slate-300">{{ formatarTelefone(cliente.telefone) }}</td>
                 <td class="px-3 py-3 text-slate-400">{{ cliente.endereco || '-' }}</td>
                <td class="px-3 py-3">
-                 <div class="flex items-center gap-1">
-                   <button @click="$emit('verEmprestimos', cliente)" class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-all" title="Empréstimos">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                  </button>
-                   <button @click="$emit('verPagamentos', cliente)" class="p-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition-all" title="Pagamentos">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                    </svg>
-                  </button>
-                   <button @click="$emit('editar', cliente)" class="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all" title="Editar">
+                <div class="flex items-center gap-1">
+                    <button @click="$emit('verEmprestimos', cliente)" class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-all" title="Empréstimos">
+                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                     </svg>
+                   </button>
+                    <button @click="$emit('editar', cliente)" class="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all" title="Editar">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                     </svg>
@@ -116,13 +111,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            Emp.
-          </button>
-          <button @click="$emit('verPagamentos', cliente)" class="flex-1 min-w-[100px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-all text-sm font-medium border border-amber-500/30 transform hover:scale-[1.02] active:scale-[0.98]">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-            </svg>
-            Pgto.
+            Empréstimo
           </button>
           <button @click="$emit('editar', cliente)" class="p-2.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all transform hover:scale-110 active:scale-95" title="Editar">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +169,7 @@ import { Search, X } from 'lucide-vue-next'
 export default {
   name: 'ClientesList',
   components: { Search, X },
-  emits: ['editar', 'novo', 'verEmprestimos', 'verPagamentos'],
+  emits: ['editar', 'novo', 'verEmprestimos'],
   data() {
     return {
       clientes: [],

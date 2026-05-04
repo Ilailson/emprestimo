@@ -81,7 +81,7 @@
 
         <!-- Clientes -->
         <template v-if="abaAtiva === 'clientes'">
-          <ClientesList v-if="!mostrarFormCliente" @editar="editarCliente" @novo="novoCliente" @verEmprestimos="verEmprestimosCliente" @verPagamentos="verPagamentosCliente" />
+          <ClientesList v-if="!mostrarFormCliente" @editar="editarCliente" @novo="novoCliente" @verEmprestimos="verEmprestimosCliente" />
           <ClientesForm 
             v-else 
             :cliente="clienteSelecionado" 
