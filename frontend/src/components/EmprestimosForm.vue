@@ -37,7 +37,7 @@
           </div>
           <div v-else class="space-y-2">
             <label class="text-sm font-medium text-slate-300">Valor (R$)</label>
-            <input v-model="form.valor" type="number" step="0.01" min="1" required placeholder="1000.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
+            <input ref="valorNovo" v-model="form.valor" type="number" step="0.01" min="1" required placeholder="1000.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
           </div>
           <div class="space-y-2">
             <label class="text-sm font-medium text-slate-300">Taxa (% ao mês)</label>
@@ -47,7 +47,7 @@
 
         <div v-if="editando" class="space-y-2">
           <label class="text-sm font-medium text-slate-300">Adicionar Valor (R$)</label>
-          <input v-model="valorAdicionar" type="number" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
+            <input ref="valorAdicionar" v-model="valorAdicionar" type="number" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-h-[48px]">
         </div>
 
         <div v-if="!editando" class="space-y-2">
@@ -112,6 +112,15 @@ export default {
       clientes: []
     }
   },
+  mounted() {
+    this.buscarClientes()
+    if (!this.emprestimo) {
+      this.form.data_vencimento = this.calcularDataVencimento(this.form.data)
+      this.$nextTick(() => {
+        this.$refs.valorNovo?.focus()
+      })
+    }
+  },
   computed: {
     editando() {
       return this.emprestimo !== null
@@ -150,6 +159,9 @@ export default {
             taxa_juros: novo.taxa_juros,
             status: novo.status || 'em_aberto'
           }
+          this.$nextTick(() => {
+            this.$refs.valorAdicionar?.focus()
+          })
         } else {
           this.resetarForm()
         }
@@ -159,12 +171,6 @@ export default {
       if (!this.editando && novaData) {
         this.form.data_vencimento = this.calcularDataVencimento(novaData)
       }
-    }
-  },
-  mounted() {
-    this.buscarClientes()
-    if (!this.emprestimo) {
-      this.form.data_vencimento = this.calcularDataVencimento(this.form.data)
     }
   },
   methods: {
