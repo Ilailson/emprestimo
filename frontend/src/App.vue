@@ -116,8 +116,9 @@
             @cancelar="cancelarFormPagamento"
           />
         </template>
-      </div>
+        </div>
     </main>
+    <InstallPrompt />
   </div>
 </template>
 
@@ -129,10 +130,11 @@ import EmprestimosForm from './components/EmprestimosForm.vue'
 import PagamentosList from './components/PagamentosList.vue'
 import PagamentosForm from './components/PagamentosForm.vue'
 import DashboardMetrics from './components/DashboardMetrics.vue'
+import InstallPrompt from './components/InstallPrompt.vue'
 
 export default {
   name: 'App',
-  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, DashboardMetrics },
+  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, DashboardMetrics, InstallPrompt },
   data() {
     return {
       abaAtiva: 'dashboard',
