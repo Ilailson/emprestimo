@@ -38,6 +38,7 @@ class Emprestimo(db.Model):
             'status': self.verificar_status(),
             'cliente_id': self.cliente_id,
             'cliente_nome': self.cliente.nome if self.cliente else None,
+            'cliente_telefone': self.cliente.telefone if self.cliente else None,
             'valor_total': self.calcular_total(),
             'juros': juros_mensal,
             'juros_acumulados': juros_acumulados,
