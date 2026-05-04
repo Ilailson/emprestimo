@@ -3,6 +3,7 @@ from extensions import db
 from models.pagamento import Pagamento
 from models.emprestimo import Emprestimo
 from models.cliente import Cliente
+from datetime import datetime
 
 pagamento_bp = Blueprint('pagamentos', __name__, url_prefix='/api')
 
@@ -74,36 +75,56 @@ def criar_pagamento():
     if not emprestimo:
         return jsonify({'erro': 'Empréstimo não encontrado'}), 404
 
-    valor = float(data.get('valor', 0))
-    if valor <= 0:
+    valor_informado = float(data.get('valor', 0))
+    if valor_informado <= 0:
         return jsonify({'erro': 'Valor deve ser maior que zero'}), 400
 
-    pagar_juros = data.get('pagar_juros', False)
+    pagar_juros = bool(data.get('pagar_juros', False))
     pagar_saldo = float(data.get('pagar_saldo', 0))
 
     valor_juros = 0
     valor_principal = 0
+    valor_total = 0
 
-    if pagar_juros:
-        # Usar juros acumulados dinâmico baseado no atraso
-        valor_juros = emprestimo.calcular_juros_acumulados()
+    # Fluxo padrão (formulário existente): juros calculado + saldo opcional
+    if pagar_juros or pagar_saldo > 0:
+        if pagar_juros:
+            # Usar juros acumulados dinâmico baseado no atraso
+            valor_juros = emprestimo.calcular_juros_acumulados()
 
-    if pagar_saldo > 0:
-        if emprestimo.saldo_devedor and pagar_saldo > emprestimo.saldo_devedor:
-            pagar_saldo = emprestimo.saldo_devedor
-        valor_principal = pagar_saldo
+        if pagar_saldo > 0:
+            if emprestimo.saldo_devedor and pagar_saldo > emprestimo.saldo_devedor:
+                pagar_saldo = emprestimo.saldo_devedor
+            valor_principal = pagar_saldo
 
-    valor_total = valor_juros + valor_principal
+        valor_total = valor_juros + valor_principal
 
-    if valor_total > 0:
-        if valor_principal > 0:
-            emprestimo.total_pago = (emprestimo.total_pago or 0) + valor_principal
-            emprestimo.saldo_devedor = (emprestimo.saldo_devedor or 0) - valor_principal
-            if emprestimo.saldo_devedor <= 0:
-                emprestimo.saldo_devedor = 0
-                emprestimo.status = 'pago'
+    # Fluxo manual (pendências mensais): registra pagamento informado como juros
+    else:
+        valor_juros = valor_informado
+        valor_total = valor_informado
+
+    if valor_total <= 0:
+        return jsonify({'erro': 'Valor total do pagamento inválido'}), 400
+
+    if valor_principal > 0:
+        emprestimo.total_pago = (emprestimo.total_pago or 0) + valor_principal
+        emprestimo.saldo_devedor = (emprestimo.saldo_devedor or 0) - valor_principal
+        if emprestimo.saldo_devedor <= 0:
+            emprestimo.saldo_devedor = 0
+            emprestimo.status = 'pago'
 
     is_juros = valor_principal == 0 and valor_total > 0
+
+    data_pagamento = None
+    if data.get('data'):
+        try:
+            data_pagamento = datetime.fromisoformat(str(data['data']))
+        except:
+            try:
+                data_pagamento = datetime.fromisoformat(str(data['data']).split('T')[0])
+            except:
+                data_pagamento = None
 
     pagamento = Pagamento(
         valor=valor_total,
@@ -111,6 +132,10 @@ def criar_pagamento():
         emprestimo_id=data['emprestimo_id'],
         is_juros=is_juros
     )
+
+    if data_pagamento:
+        pagamento.data = data_pagamento
+
     db.session.add(pagamento)
     db.session.commit()
 

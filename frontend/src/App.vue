@@ -59,6 +59,16 @@
           <span class="text-sm font-medium">Pagamentos</span>
         </button>
 
+        <button @click="abaAtiva = 'pendentes'; sidebarAberta = false" :class="[
+          'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
+          abaAtiva === 'pendentes' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/25' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+        ]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M9 3h6l1 3h4a1 1 0 011 1v3a1 1 0 01-1 1h-1v8a2 2 0 01-2 2H7a2 2 0 01-2-2v-8H4a1 1 0 01-1-1V7a1 1 0 011-1h4l1-3z"/>
+          </svg>
+          <span class="text-sm font-medium">Pendentes</span>
+        </button>
+
         <button @click="abaAtiva = 'dashboard'; sidebarAberta = false" :class="[
           'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
           abaAtiva === 'dashboard' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
@@ -116,6 +126,22 @@
             @cancelar="cancelarFormPagamento"
           />
         </template>
+
+        <template v-if="abaAtiva === 'pendentes'">
+          <PagamentosPendentes
+            v-if="!mostrarFormPagamentoPendentes"
+            :key="pendentesRefreshKey"
+            @fazerPagamento="fazerPagamentoPendente"
+          />
+          <PagamentosForm
+            v-else
+            :emprestimo-id="emprestimoIdPagamentoPendente"
+            :data-pagamento-padrao="dataPagamentoPendente"
+            :bloquear-data-pagamento="true"
+            @salvo="aoSalvarPagamentoPendente"
+            @cancelar="cancelarFormPagamentoPendente"
+          />
+        </template>
         </div>
     </main>
     <InstallPrompt />
@@ -129,12 +155,13 @@ import EmprestimosList from './components/EmprestimosList.vue'
 import EmprestimosForm from './components/EmprestimosForm.vue'
 import PagamentosList from './components/PagamentosList.vue'
 import PagamentosForm from './components/PagamentosForm.vue'
+import PagamentosPendentes from './components/PagamentosPendentes.vue'
 import DashboardMetrics from './components/DashboardMetrics.vue'
 import InstallPrompt from './components/InstallPrompt.vue'
 
 export default {
   name: 'App',
-  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, DashboardMetrics, InstallPrompt },
+  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, PagamentosPendentes, DashboardMetrics, InstallPrompt },
   data() {
     return {
       abaAtiva: 'dashboard',
@@ -145,10 +172,14 @@ export default {
       clienteParaEmprestimo: null,
       pagamentoSelecionado: null,
       mostrarFormPagamento: false,
+      mostrarFormPagamentoPendentes: false,
       filtroClienteId: null,
       filtroClienteIdPagamentos: null,
       filtroEmprestimoId: null,
       emprestimoIdParaPagamento: null,
+      emprestimoIdPagamentoPendente: null,
+      dataPagamentoPendente: null,
+      pendentesRefreshKey: 0,
       sidebarAberta: false
     }
   },
@@ -213,6 +244,13 @@ export default {
       this.filtroClienteIdPagamentos = cliente.id
       this.abaAtiva = 'pagamentos'
     },
+    fazerPagamentoPendente(pendente) {
+      this.pagamentoSelecionado = null
+      this.emprestimoIdPagamentoPendente = pendente.emprestimo_id
+      this.dataPagamentoPendente = pendente.data_referencia
+      this.mostrarFormPagamentoPendentes = true
+      this.abaAtiva = 'pendentes'
+    },
     aoSalvarEmprestimo() {
       this.emprestimoSelecionado = null
       this.mostrarFormEmprestimo = false
@@ -252,6 +290,13 @@ export default {
       this.emprestimoIdParaPagamento = null
       this.abaAtiva = 'pagamentos'
     },
+    aoSalvarPagamentoPendente() {
+      this.mostrarFormPagamentoPendentes = false
+      this.emprestimoIdPagamentoPendente = null
+      this.dataPagamentoPendente = null
+      this.pendentesRefreshKey += 1
+      this.abaAtiva = 'pendentes'
+    },
     cancelarFormCliente() {
       this.clienteSelecionado = null
       this.mostrarFormCliente = false
@@ -263,6 +308,12 @@ export default {
     cancelarFormPagamento() {
       this.pagamentoSelecionado = null
       this.mostrarFormPagamento = false
+    },
+    cancelarFormPagamentoPendente() {
+      this.mostrarFormPagamentoPendentes = false
+      this.emprestimoIdPagamentoPendente = null
+      this.dataPagamentoPendente = null
+      this.abaAtiva = 'pendentes'
     },
   }
 }

@@ -79,7 +79,7 @@
 
         <div class="space-y-2">
           <label class="text-sm font-medium text-slate-300">Data do Pagamento</label>
-          <input v-model="form.data" type="date" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[48px]">
+          <input v-model="form.data" type="date" required :disabled="bloquearDataPagamento" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all min-h-[48px] disabled:opacity-50">
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
@@ -106,7 +106,9 @@ export default {
   props: {
     pagamento: { type: Object, default: null },
     clienteId: { type: Number, default: null },
-    emprestimoId: { type: Number, default: null }
+    emprestimoId: { type: Number, default: null },
+    dataPagamentoPadrao: { type: String, default: null },
+    bloquearDataPagamento: { type: Boolean, default: false }
   },
   emits: ['salvo', 'cancelar'],
   data() {
@@ -148,15 +150,20 @@ export default {
           this.form = {
             emprestimo_id: novo.emprestimo_id,
             valor_saldo: '',
-            data: novo.data ? novo.data.split('T')[0] : new Date().toISOString().split('T')[0]
+            data: novo.data ? novo.data.split('T')[0] : this.getDataPadrao()
           }
         } else {
           this.form = {
             emprestimo_id: '',
             valor_saldo: '',
-            data: new Date().toISOString().split('T')[0]
+            data: this.getDataPadrao()
           }
         }
+      }
+    },
+    dataPagamentoPadrao(novo) {
+      if (!this.editando && novo) {
+        this.form.data = novo
       }
     }
   },
@@ -164,6 +171,9 @@ export default {
     this.buscarEmprestimos()
   },
   methods: {
+    getDataPadrao() {
+      return this.dataPagamentoPadrao || new Date().toISOString().split('T')[0]
+    },
     getJurosAcumulados() {
       if (!this.emprestimoSelecionado) return 0
       // Prioriza juros_acumulados, senão usa juros normal
@@ -232,7 +242,8 @@ export default {
         const dataToSend = {
           valor: valorFinal,
           pagar_juros: this.pagarJuros,
-          pagar_saldo: this.pagarSaldo ? parseFloat(this.form.valor_saldo || 0) : 0
+          pagar_saldo: this.pagarSaldo ? parseFloat(this.form.valor_saldo || 0) : 0,
+          data: this.form.data
         }
 
         if (this.editando) {
@@ -251,7 +262,7 @@ export default {
       this.form = {
         emprestimo_id: '',
         valor_saldo: '',
-        data: new Date().toISOString().split('T')[0]
+        data: this.getDataPadrao()
       }
       this.emprestimoSelecionado = null
       this.pagarJuros = false
