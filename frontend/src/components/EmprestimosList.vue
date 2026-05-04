@@ -71,8 +71,9 @@
         <table class="w-full">
           <thead>
             <tr class="border-b border-slate-800 bg-slate-800/50">
-              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Empréstimo</th>
+            <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
+            <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Data</th>
+            <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Empréstimo</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Taxa</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Devendo</th>
               <th class="px-3 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Juros</th>
@@ -84,13 +85,14 @@
           <tbody class="divide-y divide-slate-800">
             <tr v-for="emp in emprestimos" :key="emp.id" :class="['transition-colors', getStatusClass(emp)]">
               <td class="px-3 py-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-semibold text-xs">
-                    {{ emp.cliente_nome.charAt(0).toUpperCase() }}
-                  </div>
-                  <span class="text-white font-medium text-sm truncate max-w-[120px]">{{ emp.cliente_nome }}</span>
-                </div>
-              </td>
+                      {{ emp.cliente_nome.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="text-white font-medium">{{ emp.cliente_nome }}</span>
+                 </div>
+               </td>
+               <td class="px-3 py-3 text-slate-300 text-sm">{{ formatarData(emp.data) }}</td>
               <td class="px-3 py-3">
                 <span class="text-white font-semibold text-sm">{{ formatarDinheiro(emp.valor_original) }}</span>
               </td>
@@ -170,6 +172,7 @@
             </div>
             <div>
               <h3 class="text-white font-medium">{{ emp.cliente_nome }}</h3>
+              <p class="text-slate-400 text-sm">{{ formatarData(emp.data) }}</p>
               <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mt-1', getStatusBadge(emp)]">
                 {{ getStatusLabel(emp) }}
               </span>
