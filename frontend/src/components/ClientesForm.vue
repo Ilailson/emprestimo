@@ -18,7 +18,7 @@
 
         <div class="space-y-2">
           <label class="text-sm font-medium text-slate-300">Telefone</label>
-          <input v-model="form.telefone" required placeholder="(00) 00000-0000" @input="formatarTelefone" maxlength="14" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all min-h-[48px]">
+          <input v-model="form.telefone" required placeholder="(91) 00000-0000" @input="formatarTelefone" maxlength="14" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all min-h-[48px]">
         </div>
 
         <div class="space-y-2">
@@ -78,7 +78,7 @@ export default {
         if (novo) {
           this.form = { nome: novo.nome, telefone: novo.telefone, endereco: novo.endereco }
         } else {
-          this.form = { nome: '', telefone: '', endereco: '' }
+          this.form = { nome: '', telefone: '91', endereco: '' }
         }
       }
     }
