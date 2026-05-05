@@ -78,6 +78,16 @@
           </svg>
           <span class="text-sm font-medium">Dashboard</span>
         </button>
+
+        <button @click="abaAtiva = 'relatorios'; sidebarAberta = false" :class="[
+  'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
+  abaAtiva === 'relatorios' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+]">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+  </svg>
+  <span class="text-sm font-medium">Relatórios</span>
+</button>
       </nav>
     </aside>
 
@@ -92,10 +102,10 @@
         <!-- Clientes -->
         <template v-if="abaAtiva === 'clientes'">
           <ClientesList v-if="!mostrarFormCliente" @editar="editarCliente" @novo="novoCliente" @verEmprestimos="verEmprestimosCliente" />
-          <ClientesForm 
-            v-else 
-            :cliente="clienteSelecionado" 
-            @salvo="aoSalvarCliente" 
+          <ClientesForm
+            v-else
+            :cliente="clienteSelecionado"
+            @salvo="aoSalvarCliente"
             @cancelar="cancelarFormCliente"
             @criadoComEmprestimo="aoCriarComEmprestimo"
           />
@@ -104,12 +114,12 @@
         <!-- Empréstimos -->
         <template v-if="abaAtiva === 'emprestimos'">
           <EmprestimosList v-if="!mostrarFormEmprestimo" :cliente-id="filtroClienteId" @editar="editarEmprestimo" @novo="novoEmprestimo" @voltar="voltarEmprestimos" @fazerPagamento="fazerPagamentoEmprestimo" />
-          <EmprestimosForm 
-            v-else 
-            :emprestimo="emprestimoSelecionado" 
+          <EmprestimosForm
+            v-else
+            :emprestimo="emprestimoSelecionado"
             :cliente-id="filtroClienteId"
             :clienteParaEmprestimo="clienteParaEmprestimo"
-            @salvo="aoSalvarEmprestimo" 
+            @salvo="aoSalvarEmprestimo"
             @cancelar="cancelarFormEmprestimo"
           />
         </template>
@@ -117,12 +127,12 @@
         <!-- Pagamentos -->
         <template v-if="abaAtiva === 'pagamentos'">
           <PagamentosList v-if="!mostrarFormPagamento" :cliente-id="filtroClienteIdPagamentos" :emprestimo-id="filtroEmprestimoId" @novo="novoPagamento" @voltar="voltarPagamentos" />
-          <PagamentosForm 
-            v-else 
+          <PagamentosForm
+            v-else
             :pagamento="pagamentoSelecionado"
             :cliente-id="filtroClienteIdPagamentos"
             :emprestimo-id="emprestimoIdParaPagamento"
-            @salvo="aoSalvarPagamento" 
+            @salvo="aoSalvarPagamento"
             @cancelar="cancelarFormPagamento"
           />
         </template>
@@ -142,6 +152,12 @@
             @cancelar="cancelarFormPagamentoPendente"
           />
         </template>
+
+        <!-- Relatórios -->
+        <template v-if="abaAtiva === 'relatorios'">
+          <RelatoriosList />
+        </template>
+
         </div>
     </main>
     <InstallPrompt />
@@ -157,11 +173,12 @@ import PagamentosList from './components/PagamentosList.vue'
 import PagamentosForm from './components/PagamentosForm.vue'
 import PagamentosPendentes from './components/PagamentosPendentes.vue'
 import DashboardMetrics from './components/DashboardMetrics.vue'
+import RelatoriosList from './components/RelatoriosList.vue'
 import InstallPrompt from './components/InstallPrompt.vue'
 
 export default {
   name: 'App',
-  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, PagamentosPendentes, DashboardMetrics, InstallPrompt },
+  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, PagamentosPendentes, DashboardMetrics, InstallPrompt, RelatoriosList },
   data() {
     return {
       abaAtiva: 'dashboard',
@@ -180,6 +197,7 @@ export default {
       emprestimoIdPagamentoPendente: null,
       dataPagamentoPendente: null,
       pendentesRefreshKey: 0,
+      mostrarRelatorios: false,
       sidebarAberta: false
     }
   },
