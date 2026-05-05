@@ -232,7 +232,7 @@ export default {
         this.metricas.valorTotal = emprestimos.data.reduce((acc, e) => acc + (e.valor_original || 0), 0)
         this.metricas.saldoDevedor = emprestimos.data.reduce((acc, e) => acc + (e.saldo_devedor || 0), 0)
         this.metricas.totalPagamentos = pagamentos.data.length
-        this.metricas.totalRecebido = pagamentos.data.reduce((acc, p) => acc + (p.valor || 0), 0)
+        this.metricas.totalRecebido = pagamentos.data.reduce((acc, p) => acc + this.getValorTotalPagamento(p), 0)
         this.metricas.totalJuros = pagamentos.data.reduce((acc, p) => acc + parseFloat(p.valor_juros || 0), 0)
 
         this.recentEmprestimos = emprestimos.data.slice(0, 5)
@@ -247,6 +247,29 @@ export default {
       const partes = numero.split('.')
       partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.')
       return 'R$ ' + partes.join(',')
+    },
+    getValorTotalPagamento(pagamento) {
+      if (typeof pagamento?.valor_principal === 'number') {
+        const principal = parseFloat(pagamento.valor_principal || 0) || 0
+        const juros = parseFloat(pagamento.valor_juros || 0) || 0
+        return principal + juros
+      }
+
+      const valor = parseFloat(pagamento?.valor || 0) || 0
+      const juros = parseFloat(pagamento?.valor_juros || 0) || 0
+
+      // Novo formato: valor = principal e valor_juros = juros
+      if (pagamento?.is_juros === null && juros > 0) {
+        return valor + juros
+      }
+
+      // Juros puro: manter robustez quando valor_juros estiver preenchido
+      if (pagamento?.is_juros === true && juros > 0) {
+        return juros
+      }
+
+      // Formato legado e principal puro
+      return valor
     },
     formatarData(data) {
       if (!data) return '-'

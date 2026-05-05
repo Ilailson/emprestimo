@@ -60,6 +60,7 @@
             <tr class="border-b border-slate-800 bg-slate-800/50">
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Cliente</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Juros</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Tipo</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Data</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Ações</th>
@@ -76,11 +77,17 @@
                 </div>
               </td>
               <td class="px-4 py-3">
-                <span class="text-emerald-400 font-semibold">{{ formatarDinheiro(pag.valor) }}</span>
+                <span class="text-emerald-400 font-semibold">{{ formatarValorPrincipalExibicao(pag) }}</span>
               </td>
               <td class="px-4 py-3">
-                <span v-if="pag.is_juros" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400">
+                <span class="text-amber-400 font-semibold">{{ formatarDinheiro(getValorJuros(pag)) }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span v-if="getTipoPagamento(pag) === 'Juros'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400">
                   Juros
+                </span>
+                <span v-else-if="getTipoPagamento(pag) === 'Misto'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300">
+                  Valor + Juros
                 </span>
                 <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                   Principal
@@ -110,15 +117,18 @@
           <div class="flex-1 min-w-0">
             <h3 class="text-white font-medium truncate">{{ pag.emprestimo_nome }}</h3>
             <div class="flex items-center gap-2 mt-2">
-              <span v-if="pag.is_juros" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400">
+              <span v-if="getTipoPagamento(pag) === 'Juros'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400">
                 Juros
+              </span>
+              <span v-else-if="getTipoPagamento(pag) === 'Misto'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300">
+                Valor + Juros
               </span>
               <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                 Principal
               </span>
             </div>
           </div>
-          <span class="text-emerald-400 font-semibold text-lg">{{ formatarDinheiro(pag.valor) }}</span>
+          <span class="text-emerald-400 font-semibold text-lg">{{ formatarValorResumo(pag) }}</span>
         </div>
 
         <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
@@ -256,6 +266,51 @@ export default {
       this.mensagem = texto
       this.mensagem_tipo = tipo
       setTimeout(() => { this.mensagem = '' }, 3000)
+    },
+    toNumber(valor) {
+      const numero = parseFloat(valor)
+      return Number.isFinite(numero) ? numero : 0
+    },
+    getValorJuros(pag) {
+      const juros = this.toNumber(pag.valor_juros)
+      if (juros > 0) return juros
+      return pag.is_juros ? this.toNumber(pag.valor) : 0
+    },
+    getValorPrincipal(pag) {
+      if (typeof pag.valor_principal === 'number') {
+        return this.toNumber(pag.valor_principal)
+      }
+
+      const valor = this.toNumber(pag.valor)
+      const juros = this.toNumber(pag.valor_juros)
+      if (pag.is_juros === true) return 0
+      if (pag.is_juros === null && juros > 0) return valor
+      if (juros > 0) {
+        const principal = valor - juros
+        return principal > 0 ? principal : 0
+      }
+      return valor
+    },
+    getTipoPagamento(pag) {
+      const principal = this.getValorPrincipal(pag)
+      const juros = this.getValorJuros(pag)
+      if (principal > 0 && juros > 0) return 'Misto'
+      if (juros > 0) return 'Juros'
+      return 'Principal'
+    },
+    formatarValorPrincipalExibicao(pag) {
+      const principal = this.getValorPrincipal(pag)
+      if (principal <= 0) return '-'
+      return this.formatarDinheiro(principal)
+    },
+    formatarValorResumo(pag) {
+      const principal = this.getValorPrincipal(pag)
+      const juros = this.getValorJuros(pag)
+      if (principal > 0 && juros > 0) {
+        return `${this.formatarDinheiro(principal)} + ${this.formatarDinheiro(juros)}`
+      }
+      if (juros > 0) return this.formatarDinheiro(juros)
+      return this.formatarDinheiro(principal)
     },
     formatarDinheiro(valor) {
       if (!valor) return 'R$ 0,00'

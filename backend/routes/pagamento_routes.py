@@ -7,6 +7,27 @@ from datetime import datetime
 
 pagamento_bp = Blueprint('pagamentos', __name__, url_prefix='/api')
 
+def _valor_principal_pagamento(pagamento):
+    """Calcula o principal de forma compatível com registros antigos e novos."""
+    valor = float(pagamento.valor or 0)
+    juros = float(pagamento.valor_juros or 0)
+
+    # Juros puro: nada de principal
+    if pagamento.is_juros is True:
+        return 0.0
+
+    # Novo formato (misto): valor já representa apenas o principal
+    if pagamento.is_juros is None:
+        return max(valor, 0.0)
+
+    # Formato legado: valor = principal + juros
+    if juros > 0:
+        principal = valor - juros
+        return principal if principal > 0 else 0.0
+
+    # Principal puro
+    return max(valor, 0.0)
+
 
 @pagamento_bp.route('/pagamentos', methods=['GET'])
 def listar_pagamentos():
@@ -114,7 +135,20 @@ def criar_pagamento():
             emprestimo.saldo_devedor = 0
             emprestimo.status = 'pago'
 
-    is_juros = valor_principal == 0 and valor_total > 0
+    # Novo padrão de gravação:
+    # - Juros puro: valor = juros e valor_juros = juros
+    # - Principal puro: valor = principal e valor_juros = 0
+    # - Misto (principal + juros): valor = principal e valor_juros = juros
+    if valor_principal > 0 and valor_juros > 0:
+        valor_registrado = valor_principal
+        is_juros = None
+    elif valor_principal > 0:
+        valor_registrado = valor_principal
+        is_juros = False
+    else:
+        # Juros puro: não houve principal
+        valor_registrado = 0
+        is_juros = True
 
     data_pagamento = None
     if data.get('data'):
@@ -127,7 +161,7 @@ def criar_pagamento():
                 data_pagamento = None
 
     pagamento = Pagamento(
-        valor=valor_total,
+        valor=valor_registrado,
         valor_juros=valor_juros,
         emprestimo_id=data['emprestimo_id'],
         is_juros=is_juros
@@ -190,9 +224,7 @@ def excluir_pagamento(id):
 
     emprestimo = pagamento.emprestimo
     if emprestimo:
-        valor_principal = pagamento.valor - (pagamento.valor_juros or 0)
-        if valor_principal < 0:
-            valor_principal = 0
+        valor_principal = _valor_principal_pagamento(pagamento)
 
         emprestimo.total_pago = (emprestimo.total_pago or 0) - valor_principal
         if emprestimo.total_pago < 0:
