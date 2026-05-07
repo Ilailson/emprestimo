@@ -350,10 +350,11 @@ export default {
       this.abaAtiva = 'pendentes'
     },
     aoSalvarEmprestimo() {
+      const voltarParaClientes = this.clienteParaEmprestimo !== null
       this.emprestimoSelecionado = null
       this.mostrarFormEmprestimo = false
       this.clienteParaEmprestimo = null
-      this.abaAtiva = 'emprestimos'
+      this.abaAtiva = voltarParaClientes ? 'clientes' : 'emprestimos'
     },
     novoPagamento() {
       this.pagamentoSelecionado = null
