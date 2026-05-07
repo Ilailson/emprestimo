@@ -90,6 +90,19 @@
 </button>
       </nav>
 
+      <!-- Admin: Usuários -->
+      <div v-if="authStore.isAdmin" class="p-3 border-t border-slate-800">
+        <button @click="abaAtiva = 'usuarios'; sidebarAberta = false" :class="[
+          'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left',
+          abaAtiva === 'usuarios' ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25' : 'text-slate-400 hover:bg-violet-600/20 hover:text-violet-400'
+        ]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+          <span class="text-sm font-medium">Usuários</span>
+        </button>
+      </div>
+
       <!-- Alterar Senha -->
       <div class="p-3 border-t border-slate-800">
         <button @click="irAlterarSenha" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left text-slate-400 hover:bg-amber-600/20 hover:text-amber-400">
@@ -173,6 +186,17 @@
           />
         </template>
 
+        <!-- Usuários -->
+        <template v-if="abaAtiva === 'usuarios'">
+          <UsuariosList v-if="!mostrarFormUsuario" @novo="novoUsuario" @editar="editarUsuario" />
+          <UsuariosForm
+            v-else
+            :usuario="usuarioSelecionado"
+            @salvo="aoSalvarUsuario"
+            @cancelar="cancelarFormUsuario"
+          />
+        </template>
+
         <!-- Relatórios -->
         <template v-if="abaAtiva === 'relatorios'">
           <RelatoriosList />
@@ -194,12 +218,14 @@ import PagamentosForm from './components/PagamentosForm.vue'
 import PagamentosPendentes from './components/PagamentosPendentes.vue'
 import DashboardMetrics from './components/DashboardMetrics.vue'
 import RelatoriosList from './components/RelatoriosList.vue'
+import UsuariosList from './components/UsuariosList.vue'
+import UsuariosForm from './components/UsuariosForm.vue'
 import InstallPrompt from './components/InstallPrompt.vue'
 import { useAuthStore } from './store/auth'
 
 export default {
   name: 'MainLayout',
-  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, PagamentosPendentes, DashboardMetrics, InstallPrompt, RelatoriosList },
+  components: { ClientesList, ClientesForm, EmprestimosList, EmprestimosForm, PagamentosList, PagamentosForm, PagamentosPendentes, DashboardMetrics, InstallPrompt, RelatoriosList, UsuariosList, UsuariosForm },
   data() {
     return {
       abaAtiva: 'dashboard',
@@ -219,16 +245,41 @@ export default {
       dataPagamentoPendente: null,
       pendentesRefreshKey: 0,
       mostrarRelatorios: false,
-      sidebarAberta: false
+      sidebarAberta: false,
+      usuarioSelecionado: null,
+      mostrarFormUsuario: false
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
     }
   },
   methods: {
     irAlterarSenha() {
       this.$router.push('/alterar-senha')
     },
+    novoUsuario() {
+      this.usuarioSelecionado = null
+      this.mostrarFormUsuario = true
+      this.abaAtiva = 'usuarios'
+    },
+    editarUsuario(usuario) {
+      this.usuarioSelecionado = usuario
+      this.mostrarFormUsuario = true
+      this.abaAtiva = 'usuarios'
+    },
+    aoSalvarUsuario() {
+      this.usuarioSelecionado = null
+      this.mostrarFormUsuario = false
+      this.abaAtiva = 'usuarios'
+    },
+    cancelarFormUsuario() {
+      this.usuarioSelecionado = null
+      this.mostrarFormUsuario = false
+    },
     handleLogout() {
-      const authStore = useAuthStore()
-      authStore.logout()
+      this.authStore.logout()
       window.location.href = '/login'
     },
     novoCliente() {

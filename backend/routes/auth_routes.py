@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from extensions import db, limiter
 from models.usuario import Usuario
+from decorators import admin_required
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_required, get_jwt_identity
@@ -136,3 +137,117 @@ def alterar_senha():
     logger.info(f"Senha alterada com sucesso: usuario={usuario.login}")
     
     return jsonify({'mensagem': 'Senha alterada com sucesso'}), 200
+
+
+@auth_bp.route('/usuarios', methods=['GET', 'POST'])
+@admin_required
+def usuarios():
+    if request.method == 'GET':
+        """Lista todos os usuários (apenas admin)
+        - GET /api/auth/usuarios
+        """
+        usuarios = Usuario.query.order_by(Usuario.nome).all()
+        return jsonify([u.to_dict() for u in usuarios]), 200
+
+    """Cria um novo usuário (apenas admin)
+    - POST /api/auth/usuarios
+    - Body: { "nome": "...", "login": "...", "senha": "...", "role": "user" }
+    """
+    data = request.json
+    if not data:
+        return jsonify({'erro': 'Dados obrigatórios'}), 400
+
+    nome = data.get('nome', '').strip()
+    login = data.get('login', '').strip()
+    senha = data.get('senha', '')
+    role = data.get('role', 'user')
+
+    if not nome or not login or not senha:
+        return jsonify({'erro': 'Nome, login e senha são obrigatórios'}), 400
+
+    if len(senha) < 6:
+        return jsonify({'erro': 'Senha deve ter no mínimo 6 caracteres'}), 400
+
+    if role not in ('admin', 'user'):
+        return jsonify({'erro': 'Role deve ser admin ou user'}), 400
+
+    if Usuario.query.filter_by(login=login).first():
+        return jsonify({'erro': 'Login já existe'}), 409
+
+    usuario = Usuario(nome=nome, login=login, role=role)
+    usuario.set_senha(senha)
+    db.session.add(usuario)
+    db.session.commit()
+
+    logger.info(f"Usuário criado: login={login}, role={role} por admin={request.current_user.login}")
+
+    return jsonify({
+        'mensagem': 'Usuário criado com sucesso',
+        'usuario': usuario.to_dict()
+    }), 201
+
+
+@auth_bp.route('/usuarios/<int:id>', methods=['PUT', 'DELETE'])
+@admin_required
+def usuario_por_id(id):
+    if request.method == 'DELETE':
+        """Exclui um usuário (apenas admin)
+        - DELETE /api/auth/usuarios/<id>
+        """
+        usuario = Usuario.query.get(id)
+        if not usuario:
+            return jsonify({'erro': 'Usuário não encontrado'}), 404
+
+        if usuario.id == int(get_jwt_identity()):
+            return jsonify({'erro': 'Não é possível excluir o próprio usuário'}), 400
+
+        db.session.delete(usuario)
+        db.session.commit()
+
+        logger.info(f"Usuário excluído: id={id}, login={usuario.login} por admin={request.current_user.login}")
+
+        return jsonify({'mensagem': 'Usuário excluído com sucesso'}), 200
+
+    """Atualiza um usuário (apenas admin)
+    - PUT /api/auth/usuarios/<id>
+    - Body: { "nome": "...", "login": "...", "senha": "...", "role": "user" }
+    """
+    usuario = Usuario.query.get(id)
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+
+    data = request.json
+    if not data:
+        return jsonify({'erro': 'Dados obrigatórios'}), 400
+
+    nome = data.get('nome', '').strip()
+    login = data.get('login', '').strip()
+    senha = data.get('senha', '')
+    role = data.get('role', '')
+
+    if not nome or not login:
+        return jsonify({'erro': 'Nome e login são obrigatórios'}), 400
+
+    if role and role not in ('admin', 'user'):
+        return jsonify({'erro': 'Role deve ser admin ou user'}), 400
+
+    if login != usuario.login and Usuario.query.filter_by(login=login).first():
+        return jsonify({'erro': 'Login já existe'}), 409
+
+    usuario.nome = nome
+    usuario.login = login
+    if role:
+        usuario.role = role
+    if senha:
+        if len(senha) < 6:
+            return jsonify({'erro': 'Senha deve ter no mínimo 6 caracteres'}), 400
+        usuario.set_senha(senha)
+
+    db.session.commit()
+
+    logger.info(f"Usuário atualizado: id={id}, login={login} por admin={request.current_user.login}")
+
+    return jsonify({
+        'mensagem': 'Usuário atualizado com sucesso',
+        'usuario': usuario.to_dict()
+    }), 200
