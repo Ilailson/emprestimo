@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 
 export default {
   name: 'EmprestimosForm',
@@ -188,7 +188,7 @@ export default {
     },
     async buscarClientes() {
       try {
-        const resp = await axios.get('/api/clientes')
+        const resp = await api.get('/api/clientes')
         this.clientes = resp.data
         if (this.clienteParaEmprestimo) {
           this.form.cliente_id = this.clienteParaEmprestimo.id
@@ -233,9 +233,9 @@ export default {
           taxa_juros: parseFloat(this.form.taxa_juros)
         }
         if (this.editando) {
-          await axios.put(`/api/emprestimos/${this.emprestimo.id}`, dataToSend)
+          await api.put(`/api/emprestimos/${this.emprestimo.id}`, dataToSend)
         } else {
-          await axios.post('/api/emprestimos', dataToSend)
+          await api.post('/api/emprestimos', dataToSend)
         }
         this.$emit('salvo')
       } catch (err) {

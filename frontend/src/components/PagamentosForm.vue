@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 
 export default {
   name: 'PagamentosForm',
@@ -188,7 +188,7 @@ export default {
         if (this.clienteId) {
           url = `/api/clientes/${this.clienteId}/emprestimos`
         }
-        const resp = await axios.get(url)
+        const resp = await api.get(url)
         this.emprestimos = resp.data
         
         if (this.emprestimoId) {
@@ -247,10 +247,10 @@ export default {
         }
 
         if (this.editando) {
-          await axios.put(`/api/pagamentos/${this.pagamento.id}`, dataToSend)
+          await api.put(`/api/pagamentos/${this.pagamento.id}`, dataToSend)
         } else {
           dataToSend.emprestimo_id = parseInt(this.form.emprestimo_id)
-          await axios.post('/api/pagamentos', dataToSend)
+          await api.post('/api/pagamentos', dataToSend)
         }
         this.$emit('salvo')
         this.limpar()

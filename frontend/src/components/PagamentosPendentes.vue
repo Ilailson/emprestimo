@@ -191,7 +191,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 import { Search, X } from 'lucide-vue-next'
 
 export default {
@@ -308,8 +308,8 @@ export default {
       this.carregando = true
       try {
         const [respEmprestimos, respPagamentos] = await Promise.all([
-          axios.get('/api/emprestimos'),
-          axios.get('/api/pagamentos')
+          api.get('/api/emprestimos'),
+          api.get('/api/pagamentos')
         ])
 
         const fimMesAtual = new Date()

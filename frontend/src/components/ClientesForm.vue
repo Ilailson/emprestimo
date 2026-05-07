@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 
 export default {
   name: 'ClientesForm',
@@ -97,9 +97,9 @@ export default {
     async salvar() {
       try {
         if (this.editando) {
-          await axios.put(`/api/clientes/${this.cliente.id}`, this.form)
+          await api.put(`/api/clientes/${this.cliente.id}`, this.form)
         } else {
-          await axios.post('/api/clientes', this.form)
+          await api.post('/api/clientes', this.form)
         }
         this.$emit('salvo')
         this.limpar()
@@ -112,7 +112,7 @@ export default {
     },
     async salvarComEmprestimo() {
       try {
-        const resp = await axios.post('/api/clientes', this.form)
+        const resp = await api.post('/api/clientes', this.form)
         this.$emit('criadoComEmprestimo', resp.data)
         this.limpar()
       } catch (err) {

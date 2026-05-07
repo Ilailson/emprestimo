@@ -3,20 +3,18 @@ from extensions import db
 from models.cliente import Cliente
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from decorators import token_required, admin_required
 
 cliente_bp = Blueprint('clientes', __name__, url_prefix='/api')
 
 # LISTAR TODOS OS CLIENTES (com busca opcional)
 @cliente_bp.route('/clientes', methods=['GET'])
+@token_required
 def listar_clientes():
     """Retorna lista de todos os clientes, com filtro opcional por nome ou telefone"""
     termo = request.args.get('q', '')
-
     query = Cliente.query
     if termo:
-        #ILIKE para PostgreSQL, LIKE para SQLite
-        termo_upper = termo.upper()
-        termo_lower = termo.lower()
         query = query.filter(
             or_(
                 Cliente.nome.ilike(f'%{termo}%'),
@@ -25,19 +23,18 @@ def listar_clientes():
                 Cliente.telefone.like(f'%{termo}%')
             )
         )
-
     clientes = query.all()
     return jsonify([c.to_dict() for c in clientes]), 200
-# CRIAR NOVO CLIENTE
+
+# CRIAR NOVO CLIENTE - POST: apenas admin
 @cliente_bp.route('/clientes', methods=['POST'])
+@admin_required
 def criar_cliente():
     """Cria um novo cliente"""
     data = request.json
-
     # Validar campos obrigatórios
     if not data.get('nome') or not data.get('telefone'):
         return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
-
     cliente = Cliente(
         nome=data['nome'],
         telefone=data['telefone'],
@@ -45,11 +42,11 @@ def criar_cliente():
     )
     db.session.add(cliente)
     db.session.commit()
-
     return jsonify(cliente.to_dict()), 201
 
-# BUSCAR CLIENTE POR ID
+# BUSCAR CLIENTE POR ID - GET: user e admin
 @cliente_bp.route('/clientes/<int:id>', methods=['GET'])
+@token_required
 def buscar_cliente(id):
     """Retorna um cliente pelo ID"""
     cliente = Cliente.query.get(id)
@@ -57,46 +54,43 @@ def buscar_cliente(id):
         return jsonify({'erro': 'Cliente não encontrado'}), 404
     return jsonify(cliente.to_dict()), 200
 
-# ATUALIZAR CLIENTE
+# ATUALIZAR CLIENTE - PUT: apenas admin
 @cliente_bp.route('/clientes/<int:id>', methods=['PUT'])
+@admin_required
 def atualizar_cliente(id):
     """Atualiza um cliente existente"""
     cliente = Cliente.query.get(id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
-
     data = request.json
-
     # Validar campos obrigatórios
     if not data.get('nome') or not data.get('telefone'):
         return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
-
     cliente.nome = data['nome']
     cliente.telefone = data['telefone']
     cliente.endereco = data.get('endereco', '')
-
     db.session.commit()
     return jsonify(cliente.to_dict()), 200
 
-# EXCLUIR CLIENTE
+# EXCLUIR CLIENTE - DELETE: apenas admin
 @cliente_bp.route('/clientes/<int:id>', methods=['DELETE'])
+@admin_required
 def excluir_cliente(id):
     """Exclui um cliente pelo ID"""
     cliente = Cliente.query.get(id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
-
     db.session.delete(cliente)
     db.session.commit()
     return jsonify({'mensagem': 'Cliente excluído com sucesso'}), 200
 
-# RELATÓRIOS
+# RELATÓRIOS - GET: user e admin
 @cliente_bp.route('/clientes/<int:cliente_id>/relatorio-juros', methods=['GET'])
+@token_required
 def relatorio_juros(cliente_id):
     """Relatório de juros pagos por cliente - soma direta do valor_juros"""
     from models.emprestimo import Emprestimo
     from models.pagamento import Pagamento
-
     cliente = Cliente.query.get(cliente_id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404

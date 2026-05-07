@@ -188,7 +188,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 
 export default {
   name: 'DashboardMetrics',
@@ -220,9 +220,9 @@ export default {
     async buscarDados() {
       try {
         const [clientes, emprestimos, pagamentos] = await Promise.all([
-          axios.get('/api/clientes'),
-          axios.get('/api/emprestimos'),
-          axios.get('/api/pagamentos')
+          api.get('/api/clientes'),
+          api.get('/api/emprestimos'),
+          api.get('/api/pagamentos')
         ])
 
         this.metricas.clientes = clientes.data.length

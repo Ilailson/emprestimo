@@ -179,7 +179,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 import { Search, X } from 'lucide-vue-next'
 
 export default {
@@ -225,7 +225,7 @@ export default {
         if (this.busca && this.busca.trim()) {
           params.q = this.busca.trim()
         }
-        const resp = await axios.get(url, { params })
+        const resp = await api.get(url, { params })
         this.pagamentos = resp.data
       } catch (err) {
         this.exibirMensagem('Erro ao carregar pagamentos', 'error')
@@ -253,7 +253,7 @@ export default {
     async confirmarExcluir() {
       if (!this.pagamentoParaExcluir) return
       try {
-        await axios.delete(`/api/pagamentos/${this.pagamentoParaExcluir}`)
+        await api.delete(`/api/pagamentos/${this.pagamentoParaExcluir}`)
         this.exibirMensagem('Pagamento excluído com sucesso', 'success')
         this.buscar()
       } catch (err) {

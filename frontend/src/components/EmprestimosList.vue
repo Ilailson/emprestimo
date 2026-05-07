@@ -300,7 +300,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 import { Search, X } from 'lucide-vue-next'
 
 export default {
@@ -345,7 +345,7 @@ export default {
           params.status = this.statusFilter.trim()
         }
 
-        const resp = await axios.get(url, { params })
+        const resp = await api.get(url, { params })
         this.emprestimos = resp.data
       } catch (err) {
         this.exibirMensagem('Erro ao carregar empréstimos', 'error')
@@ -382,7 +382,7 @@ export default {
         return
       }
       try {
-        await axios.delete(`/api/emprestimos/${this.emprestimoParaExcluir}`)
+        await api.delete(`/api/emprestimos/${this.emprestimoParaExcluir}`)
         this.exibirMensagem('Empréstimo excluído com sucesso', 'success')
         this.buscar()
       } catch (err) {

@@ -158,7 +158,7 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import api from '@/services/api'
 import { Search, X } from 'lucide-vue-next'
 import html2pdf from 'html2pdf.js'
 export default {
@@ -181,7 +181,7 @@ export default {
   methods: {
     async buscarClientes() {
       try {
-        const resp = await axios.get('/api/clientes')
+        const resp = await api.get('/api/clientes')
         this.clientes = resp.data
       } catch (err) {
         console.error('Erro ao carregar clientes:', err)
@@ -225,7 +225,7 @@ export default {
       this.carregando = true
       try {
         if (tipo === 'juros') {
-          const resp = await axios.get(`/api/clientes/${this.clienteSelecionado.id}/relatorio-juros`)
+          const resp = await api.get(`/api/clientes/${this.clienteSelecionado.id}/relatorio-juros`)
           this.relatorioJuros = resp.data
 
         }

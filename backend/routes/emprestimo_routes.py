@@ -3,26 +3,28 @@ from extensions import db
 from models.emprestimo import Emprestimo
 from models.cliente import Cliente
 from datetime import datetime
+from decorators import token_required, admin_required  # Novo import
 
 emprestimo_bp = Blueprint('emprestimos', __name__, url_prefix='/api')
 
 
-# LISTAR TODOS OS EMPRÉSTIMOS
+# LISTAR TODOS OS EMPRÉSTIMOS - GET: user e admin
 @emprestimo_bp.route('/emprestimos', methods=['GET'])
+@token_required
 def listar_emprestimos():
     """Retorna lista de todos os empréstimos com filtros opcionais"""
     from sqlalchemy.orm import joinedload
-    
+
     q = request.args.get('q', '')
     status = request.args.get('status', '')
-    
+
     # Usar eager loading para evitar N+1 queries
     query = Emprestimo.query.options(joinedload(Emprestimo.cliente))
-    
+
     # Filtro por nome do cliente (em SQL)
     if q:
         query = query.join(Cliente).filter(Cliente.nome.ilike(f'%{q}%'))
-    
+
     # Filtro por status (em SQL)
     if status:
         agora = datetime.utcnow()
@@ -36,28 +38,29 @@ def listar_emprestimos():
             query = query.filter(Emprestimo.status == 'em_aberto')
         elif status == 'pago':
             query = query.filter(Emprestimo.status == 'pago')
-    
+
     # Usar distinct para evitar duplicatas quando há join
     emprestimos = query.distinct().all()
-    
+
     return jsonify([e.to_dict() for e in emprestimos]), 200
 
 
-# LISTAR EMPRÉSTIMOS POR CLIENTE
+# LISTAR EMPRÉSTIMOS POR CLIENTE - GET: user e admin
 @emprestimo_bp.route('/clientes/<int:cliente_id>/emprestimos', methods=['GET'])
+@token_required
 def listar_emprestimos_cliente(cliente_id):
     """Retorna empréstimos de um cliente específico com filtros opcionais"""
     from sqlalchemy.orm import joinedload
-    
+
     cliente = Cliente.query.get(cliente_id)
     if not cliente:
         return jsonify({'erro': 'Cliente não encontrado'}), 404
 
     status = request.args.get('status', '')
-    
+
     # Usar eager loading
     query = Emprestimo.query.options(joinedload(Emprestimo.cliente)).filter_by(cliente_id=cliente_id)
-    
+
     # Filtro por status (em SQL)
     if status:
         agora = datetime.utcnow()
@@ -71,14 +74,15 @@ def listar_emprestimos_cliente(cliente_id):
             query = query.filter(Emprestimo.status == 'em_aberto')
         elif status == 'pago':
             query = query.filter(Emprestimo.status == 'pago')
-    
+
     emprestimos = query.all()
-    
+
     return jsonify([e.to_dict() for e in emprestimos]), 200
 
 
-# CRIAR NOVO EMPRÉSTIMO
+# CRIAR NOVO EMPRÉSTIMO - POST: apenas admin
 @emprestimo_bp.route('/emprestimos', methods=['POST'])
+@admin_required
 def criar_emprestimo():
     """Cria um novo empréstimo"""
     data = request.json
@@ -127,8 +131,9 @@ def criar_emprestimo():
     return jsonify(emprestimo.to_dict()), 201
 
 
-# BUSCAR EMPRÉSTIMO POR ID
+# BUSCAR EMPRÉSTIMO POR ID - GET: user e admin
 @emprestimo_bp.route('/emprestimos/<int:id>', methods=['GET'])
+@token_required
 def buscar_emprestimo(id):
     """Retorna um empréstimo pelo ID"""
     emprestimo = Emprestimo.query.get(id)
@@ -137,8 +142,9 @@ def buscar_emprestimo(id):
     return jsonify(emprestimo.to_dict()), 200
 
 
-# ATUALIZAR EMPRÉSTIMO
+# ATUALIZAR EMPRÉSTIMO - PUT: apenas admin
 @emprestimo_bp.route('/emprestimos/<int:id>', methods=['PUT'])
+@admin_required
 def atualizar_emprestimo(id):
     """Atualiza um empréstimo existente"""
     emprestimo = Emprestimo.query.get(id)
@@ -177,8 +183,9 @@ def atualizar_emprestimo(id):
     return jsonify(emprestimo.to_dict()), 200
 
 
-# EXCLUIR EMPRÉSTIMO
+# EXCLUIR EMPRÉSTIMO - DELETE: apenas admin
 @emprestimo_bp.route('/emprestimos/<int:id>', methods=['DELETE'])
+@admin_required
 def excluir_emprestimo(id):
     """Exclui um empréstimo pelo ID"""
     emprestimo = Emprestimo.query.get(id)

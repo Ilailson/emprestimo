@@ -2,3 +2,5 @@
 from models.cliente import Cliente
 from models.emprestimo import Emprestimo
 from models.pagamento import Pagamento
+from models.usuario import Usuario
+from models.usuario import Usuario
