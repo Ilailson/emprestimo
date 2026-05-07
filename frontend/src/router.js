@@ -7,6 +7,12 @@ const routes = [
     component: () => import('@/views/Login.vue')
   },
   {
+    path: '/alterar-senha',
+    name: 'AlterarSenha',
+    component: () => import('@/views/AlterarSenha.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/',
     name: 'Home',
     component: () => import('@/MainLayout.vue'),

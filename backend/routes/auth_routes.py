@@ -91,3 +91,48 @@ def get_current_user():
         return jsonify({'erro': 'Usuário não encontrado'}), 401
     
     return jsonify(usuario.to_dict()), 200
+
+@auth_bp.route('/alterar-senha', methods=['POST'])
+@jwt_required()
+def alterar_senha():
+    """Altera a senha do usuário logado
+    - POST /api/auth/alterar-senha
+    - Body: { "senha_atual": "...", "nova_senha": "...", "confirmacao_senha": "..." }
+    """
+    current_user_id = get_jwt_identity()
+    usuario = Usuario.query.get(current_user_id)
+    
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 401
+    
+    data = request.json
+    if not data:
+        return jsonify({'erro': 'Dados obrigatórios'}), 400
+    
+    senha_atual = data.get('senha_atual', '')
+    nova_senha = data.get('nova_senha', '')
+    confirmacao_senha = data.get('confirmacao_senha', '')
+    
+    if not senha_atual or not nova_senha or not confirmacao_senha:
+        return jsonify({'erro': 'Todos os campos são obrigatórios'}), 400
+    
+    if not usuario.verificar_senha(senha_atual):
+        logger.warning(f"Tentativa de alteração de senha falha: usuario={usuario.login}, ip={request.remote_addr}")
+        return jsonify({'erro': 'Senha atual incorreta'}), 401
+    
+    if len(nova_senha) < 6:
+        return jsonify({'erro': 'Nova senha deve ter no mínimo 6 caracteres'}), 400
+    
+    if nova_senha != confirmacao_senha:
+        return jsonify({'erro': 'Confirmação de senha não confere'}), 400
+    
+    if senha_atual == nova_senha:
+        return jsonify({'erro': 'Nova senha deve ser diferente da senha atual'}), 400
+    
+    usuario.set_senha(nova_senha)
+    usuario.last_login = db.func.now()
+    db.session.commit()
+    
+    logger.info(f"Senha alterada com sucesso: usuario={usuario.login}")
+    
+    return jsonify({'mensagem': 'Senha alterada com sucesso'}), 200
