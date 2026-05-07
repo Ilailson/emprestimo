@@ -384,10 +384,12 @@ export default {
       this.abaAtiva = 'pagamentos'
     },
     aoSalvarPagamento() {
+      const voltarParaEmprestimos = this.filtroEmprestimoId !== null
       this.pagamentoSelecionado = null
       this.mostrarFormPagamento = false
       this.emprestimoIdParaPagamento = null
-      this.abaAtiva = 'pagamentos'
+      this.filtroEmprestimoId = null
+      this.abaAtiva = voltarParaEmprestimos ? 'emprestimos' : 'pagamentos'
     },
     aoSalvarPagamentoPendente() {
       this.mostrarFormPagamentoPendentes = false
