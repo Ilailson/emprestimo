@@ -131,6 +131,9 @@ def criar_pagamento():
         valor_juros = valor_informado
         valor_total = valor_informado
 
+    if valor_juros > 0:
+        emprestimo.total_juros_pago = (emprestimo.total_juros_pago or 0) + valor_juros
+
     if valor_total <= 0:
         return jsonify({'erro': 'Valor total do pagamento inválido'}), 400
 

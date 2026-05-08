@@ -50,7 +50,7 @@
             <input type="checkbox" v-model="pagarJuros" class="w-5 h-5 mt-0.5 rounded border-slate-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900">
             <div>
               <p class="text-white font-medium">Pagar Juros</p>
-              <p class="text-slate-400 text-sm">Juros acumulados ({{ emprestimoSelecionado.meses_atraso || 0 }} meses): {{ formatarDinheiro(emprestimoSelecionado.juros_acumulados || 0) }}</p>
+              <p class="text-slate-400 text-sm">Juros {{ valorJurosPadrao ? 'do mês' : 'acumulados' }} ({{ emprestimoSelecionado.meses_atraso || 0 }} meses): {{ formatarDinheiro(getJurosAcumulados()) }}</p>
             </div>
           </label>
 
@@ -108,6 +108,7 @@ export default {
     clienteId: { type: Number, default: null },
     emprestimoId: { type: Number, default: null },
     dataPagamentoPadrao: { type: String, default: null },
+    valorJurosPadrao: { type: Number, default: null },
     bloquearDataPagamento: { type: Boolean, default: false }
   },
   emits: ['salvo', 'cancelar'],
@@ -131,7 +132,11 @@ export default {
     valorTotal() {
       let total = 0
       if (this.pagarJuros && this.emprestimoSelecionado) {
-        total += this.emprestimoSelecionado.juros_acumulados || 0
+        if (this.valorJurosPadrao) {
+          total += this.valorJurosPadrao
+        } else {
+          total += this.emprestimoSelecionado.juros_acumulados || 0
+        }
       }
       if (this.pagarSaldo && this.form.valor_saldo) {
         total += parseFloat(this.form.valor_saldo)
@@ -176,10 +181,9 @@ export default {
     },
     getJurosAcumulados() {
       if (!this.emprestimoSelecionado) return 0
-      // Prioriza juros_acumulados, senão usa juros normal
+      if (this.valorJurosPadrao) return this.valorJurosPadrao
       const juros = this.emprestimoSelecionado.juros_acumulados
       if (typeof juros === 'number' && juros > 0) return juros
-      // Fallback para juros normal (1 mês)
       return this.emprestimoSelecionado.juros || 0
     },
     async buscarEmprestimos() {
@@ -194,7 +198,7 @@ export default {
         if (this.emprestimoId) {
           this.form.emprestimo_id = this.emprestimoId
           this.emprestimoSelecionado = this.emprestimos.find(e => e.id === this.emprestimoId)
-          if (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0) {
+          if (this.valorJurosPadrao || (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0)) {
             this.pagarJuros = true
           }
         } else if (this.form.emprestimo_id) {
@@ -209,7 +213,7 @@ export default {
       this.pagarJuros = false
       this.pagarSaldo = false
       this.form.valor_saldo = ''
-      if (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0) {
+      if (this.valorJurosPadrao || (this.emprestimoSelecionado && (this.emprestimoSelecionado.juros_acumulados || 0) > 0)) {
         this.pagarJuros = true
       }
     },
@@ -228,7 +232,11 @@ export default {
 
         let valorFinal = 0
         if (this.pagarJuros && this.emprestimoSelecionado) {
-          valorFinal += this.emprestimoSelecionado.juros_acumulados || 0
+          if (this.valorJurosPadrao) {
+            valorFinal += this.valorJurosPadrao
+          } else {
+            valorFinal += this.emprestimoSelecionado.juros_acumulados || 0
+          }
         }
         if (this.pagarSaldo && this.form.valor_saldo) {
           valorFinal += parseFloat(this.form.valor_saldo)
@@ -241,7 +249,7 @@ export default {
 
         const dataToSend = {
           valor: valorFinal,
-          pagar_juros: this.pagarJuros,
+          pagar_juros: this.valorJurosPadrao ? false : this.pagarJuros,
           pagar_saldo: this.pagarSaldo ? parseFloat(this.form.valor_saldo || 0) : 0,
           data: this.form.data
         }

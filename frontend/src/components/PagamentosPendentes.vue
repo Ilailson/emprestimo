@@ -381,7 +381,8 @@ export default {
     abrirFormPagamento(item) {
       this.$emit('fazerPagamento', {
         emprestimo_id: item.emprestimo_id,
-        data_referencia: item.data_referencia
+        data_referencia: item.data_referencia,
+        valor_juros: item.valor_juros_mensal
       })
     },
     abrirWhatsApp(item) {

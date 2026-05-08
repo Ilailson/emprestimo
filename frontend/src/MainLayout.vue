@@ -181,6 +181,7 @@
             v-else
             :emprestimo-id="emprestimoIdPagamentoPendente"
             :data-pagamento-padrao="dataPagamentoPendente"
+            :valor-juros-padrao="valorJurosPagamentoPendente"
             :bloquear-data-pagamento="true"
             @salvo="aoSalvarPagamentoPendente"
             @cancelar="cancelarFormPagamentoPendente"
@@ -244,6 +245,7 @@ export default {
       emprestimoIdParaPagamento: null,
       emprestimoIdPagamentoPendente: null,
       dataPagamentoPendente: null,
+      valorJurosPagamentoPendente: null,
       pendentesRefreshKey: 0,
       mostrarRelatorios: false,
       sidebarAberta: false,
@@ -346,6 +348,7 @@ export default {
       this.pagamentoSelecionado = null
       this.emprestimoIdPagamentoPendente = pendente.emprestimo_id
       this.dataPagamentoPendente = pendente.data_referencia
+      this.valorJurosPagamentoPendente = pendente.valor_juros || null
       this.mostrarFormPagamentoPendentes = true
       this.abaAtiva = 'pendentes'
     },
@@ -395,6 +398,7 @@ export default {
       this.mostrarFormPagamentoPendentes = false
       this.emprestimoIdPagamentoPendente = null
       this.dataPagamentoPendente = null
+      this.valorJurosPagamentoPendente = null
       this.pendentesRefreshKey += 1
       this.abaAtiva = 'pendentes'
     },
@@ -418,6 +422,7 @@ export default {
       this.mostrarFormPagamentoPendentes = false
       this.emprestimoIdPagamentoPendente = null
       this.dataPagamentoPendente = null
+      this.valorJurosPagamentoPendente = null
       this.abaAtiva = 'pendentes'
     },
   }

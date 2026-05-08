@@ -12,6 +12,7 @@ class Emprestimo(db.Model):
     data_ultimo_calculo = db.Column(db.DateTime, nullable=True)
     saldo_devedor = db.Column(db.Float, nullable=True)
     total_pago = db.Column(db.Float, default=0.0)
+    total_juros_pago = db.Column(db.Float, default=0.0)
     status = db.Column(db.String(20), default='em_aberto')
 
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
@@ -25,7 +26,7 @@ class Emprestimo(db.Model):
         if meses_atraso <= 0:
             juros_acumulados = juros_mensal
         else:
-            juros_acumulados = juros_mensal * meses_atraso
+            juros_acumulados = max(0, juros_mensal * meses_atraso - (self.total_juros_pago or 0))
         return {
             'id': self.id,
             'valor_original': self.valor_original,
@@ -68,8 +69,7 @@ class Emprestimo(db.Model):
         juros_mensal = self.saldo_devedor * (self.taxa_juros / 100)
         if meses_atraso <= 0:
             return juros_mensal
-        else:
-            return juros_mensal * meses_atraso
+        return max(0, juros_mensal * meses_atraso - (self.total_juros_pago or 0))
 
     def calcular_total(self):
         meses_atraso = self.calcular_meses_atraso()
@@ -77,7 +77,7 @@ class Emprestimo(db.Model):
         if meses_atraso <= 0:
             juros_acumulados = juros_mensal
         else:
-            juros_acumulados = juros_mensal * meses_atraso
+            juros_acumulados = max(0, juros_mensal * meses_atraso - (self.total_juros_pago or 0))
         return (self.saldo_devedor or 0) + juros_acumulados
 
     def verificar_status(self):
