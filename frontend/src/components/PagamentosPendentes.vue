@@ -198,6 +198,9 @@ export default {
   name: 'PagamentosPendentes',
   components: { Search, X },
   emits: ['fazerPagamento'],
+  props: {
+    clienteIdInicial: { type: String, default: '' }
+  },
   data() {
     return {
       pendentes: [],
@@ -209,6 +212,13 @@ export default {
       mensagem: '',
       mensagem_tipo: ''
     }
+  },
+  mounted() {
+    this.buscar().then(() => {
+      if (this.clienteIdInicial) {
+        this.clienteFiltro = this.clienteIdInicial
+      }
+    })
   },
   computed: {
     mesAtualKey() {
@@ -246,9 +256,6 @@ export default {
     pendentesMesAtual() {
       return this.pendentesFiltrados.filter((item) => item.mes_key === this.mesAtualKey).length
     }
-  },
-  mounted() {
-    this.buscar()
   },
   methods: {
     onInputBusca() {
