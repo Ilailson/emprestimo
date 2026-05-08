@@ -249,9 +249,12 @@ export default {
 
         const dataToSend = {
           valor: valorFinal,
-          pagar_juros: this.valorJurosPadrao ? false : this.pagarJuros,
+          pagar_juros: this.valorJurosPadrao ? true : this.pagarJuros,
           pagar_saldo: this.pagarSaldo ? parseFloat(this.form.valor_saldo || 0) : 0,
           data: this.form.data
+        }
+        if (this.valorJurosPadrao) {
+          dataToSend.valor_juros = this.valorJurosPadrao
         }
 
         if (this.editando) {

@@ -116,8 +116,12 @@ def criar_pagamento():
     # Fluxo padrão (formulário existente): juros calculado + saldo opcional
     if pagar_juros or pagar_saldo > 0:
         if pagar_juros:
-            # Usar juros acumulados dinâmico baseado no atraso
-            valor_juros = emprestimo.calcular_juros_acumulados()
+            # Aceita valor_juros customizado do frontend (ex: 1 mês vindo do Pendentes)
+            valor_juros_custom = data.get('valor_juros')
+            if valor_juros_custom is not None:
+                valor_juros = float(valor_juros_custom)
+            else:
+                valor_juros = emprestimo.calcular_juros_acumulados()
 
         if pagar_saldo > 0:
             if emprestimo.saldo_devedor and pagar_saldo > emprestimo.saldo_devedor:
