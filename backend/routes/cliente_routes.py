@@ -122,7 +122,10 @@ def relatorio_juros(cliente_id):
         for pag in pagamentos:
             valor = float(pag.valor or 0)
             juros = float(pag.valor_juros or 0)
-            principal = valor - juros if valor > juros else valor
+            if pag.is_juros is True:
+                principal = 0.0
+            else:
+                principal = max(valor, 0.0)
 
             total_juros_pagos += juros
             total_principal_pago += principal
