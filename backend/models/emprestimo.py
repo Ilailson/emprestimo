@@ -49,14 +49,11 @@ class Emprestimo(db.Model):
         if not self.data_vencimento:
             return 0
         agora = datetime.utcnow()
-        if agora <= self.data_vencimento:
+        if agora < self.data_vencimento:
             return 0
         anos = agora.year - self.data_vencimento.year
         meses = agora.month - self.data_vencimento.month
-        dias = agora.day - self.data_vencimento.day
-        total_meses = anos * 12 + meses
-        if dias < 0:
-            total_meses -= 1
+        total_meses = anos * 12 + meses + 1
         return max(0, total_meses)
 
     def calcular_juros(self):
