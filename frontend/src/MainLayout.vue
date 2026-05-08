@@ -407,8 +407,12 @@ export default {
       this.mostrarFormEmprestimo = false
     },
     cancelarFormPagamento() {
+      const voltarParaEmprestimos = this.filtroEmprestimoId !== null
       this.pagamentoSelecionado = null
       this.mostrarFormPagamento = false
+      this.emprestimoIdParaPagamento = null
+      this.filtroEmprestimoId = null
+      this.abaAtiva = voltarParaEmprestimos ? 'emprestimos' : 'pagamentos'
     },
     cancelarFormPagamentoPendente() {
       this.mostrarFormPagamentoPendentes = false
