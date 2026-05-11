@@ -24,3 +24,10 @@ Thumbs.db
 
 # Cache do Docker
 .cache/
+
+# Local data e config
+instance/
+Dockerfile
+start_server.sh
+server.log
+flask.log
